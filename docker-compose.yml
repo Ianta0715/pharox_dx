@@ -1,0 +1,37 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_storage:/root/.ollama
+    restart: unless-stopped
+    # Para habilitar aceleración por GPU NVIDIA si posees una en tu sistema,
+    # descomenta las siguientes líneas. Asegúrate de tener instalado NVIDIA Container Toolkit.
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+  ollama-pull-model:
+    image: curlimages/curl:latest
+    container_name: ollama-pull-model
+    entrypoint: >
+      sh -c "
+      echo 'Esperando que Ollama esté disponible...';
+      until curl -s http://ollama:11434/api/tags > /dev/null; do
+        sleep 2;
+      done;
+      echo 'Ollama listo. Verificando/Descargando el modelo phi3...';
+      curl -s -X POST http://ollama:11434/api/pull -d '{\"name\": \"phi3\"}';
+      echo 'Modelo phi3 descargado con éxito.';
+      "
+    depends_on:
+      - ollama
+
+volumes:
+  ollama_storage:
