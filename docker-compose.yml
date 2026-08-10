@@ -32,6 +32,22 @@ services:
       "
     depends_on:
       - ollama
+    
+  backend:
+    build: .
+    container_name: pharox_backend
+    ports:
+      -"8000:8000"
+    volumes:
+      - ./data:/app/data
+      - chroma_storage:/app/chroma_db
+    environment:
+      - OLLAMA_URL=http://ollama:11434/api/generate
+    depends_on:
+      - ollama-pull-model
+    restart: unless-stopped
+
 
 volumes:
   ollama_storage:
+  chroma_storage:
