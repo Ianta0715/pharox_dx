@@ -1,56 +1,41 @@
 import os
-import requests
+from langchain_ollama import ChatOllama, OllamaEmbeddings
 
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+DEFAULT_MODEL = os.getenv("OLLAMA_MODEL", "llama3.1:8b")
 
-def llamar_modelo(prompt: str, model: str = "qwen2.5:1.5b") -> str:
+def get_llm(model: str = DEFAULT_MODEL, temperature: float = 0.0) -> ChatOllama:
     """
-    Abstracción para realizar llamadas de generación a Ollama/LLMs.
-    Retorna la respuesta en formato de texto.
+    Inicializa y retorna la instancia de ChatOllama de LangChain.
     """
-    url = f"{OLLAMA_HOST}/api/generate"
-    payload_ia = {
-        "model": model,
-        "prompt": prompt,
-        "stream": False
-    }
-    
-    try:
-        response = requests.post(url, json=payload_ia, timeout=300.0)
-        
-        if response.status_code == 200:
-            return response.json().get("response", "")
-        else:
-            raise RuntimeError(f"Ollama devolvió código de estado {response.status_code}: {response.text}")
-            
-    except Exception as e:
-        raise ConnectionError(f"Error de conexión con Ollama en {url}: {repr(e)}")
+    return ChatOllama(
+        model=model,
+        base_url=OLLAMA_HOST,
+        temperature=temperature
+    )
+
+def get_embeddings(model: str = "nomic-embed-text") -> OllamaEmbeddings:
+    """
+    Inicializa y retorna la instancia de OllamaEmbeddings de LangChain.
+    """
+    return OllamaEmbeddings(
+        model=model,
+        base_url=OLLAMA_HOST
+    )
+
+def llamar_modelo(prompt: str, model: str = DEFAULT_MODEL) -> str:
+    """
+    Genera una respuesta de texto utilizando ChatOllama de LangChain.
+    Mantiene compatibilidad con firmas de llamadas anteriores.
+    """
+    llm = get_llm(model=model)
+    response = llm.invoke(prompt)
+    return response.content
 
 def generar_embedding(texto: str, model: str = "nomic-embed-text") -> list[float]:
     """
-    Genera el vector de embedding de 768 dimensiones para un texto usando Ollama.
+    Genera el vector de embedding utilizando OllamaEmbeddings de LangChain.
+    Mantiene compatibilidad con firmas de llamadas anteriores.
     """
-    url = f"{OLLAMA_HOST}/api/embeddings"
-    payload = {
-        "model": model,
-        "prompt": texto
-    }
-    
-    try:
-        response = requests.post(url, json=payload, timeout=60.0)
-        
-        if response.status_code == 200:
-            embedding = response.json().get("embedding")
-            if embedding:
-                return embedding
-            else:
-                # Intentar formato alternativo si la API de Ollama responde de otra forma
-                embeddings = response.json().get("embeddings")
-                if embeddings and isinstance(embeddings, list):
-                    return embeddings[0]
-                raise ValueError("La respuesta de Ollama no contiene el campo 'embedding' ni 'embeddings'.")
-        else:
-            raise RuntimeError(f"Ollama embeddings devolvió código de estado {response.status_code}: {response.text}")
-            
-    except Exception as e:
-        raise ConnectionError(f"Error de conexión con Ollama Embeddings en {url}: {repr(e)}")
+    embeddings = get_embeddings(model=model)
+    return embeddings.embed_query(texto)
