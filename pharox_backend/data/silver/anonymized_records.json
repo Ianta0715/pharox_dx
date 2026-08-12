@@ -1,0 +1,66 @@
+[
+    {
+        "patient_hash_sha256": "a4e4f12c245e8b0e2b6a623eab2ffc5a6ea76654d25850bea5b3c42ed37fbe92",
+        "metadata_auditoria": {
+            "ontologia_validada": "CIE-10 (Inferido)",
+            "fecha_procesamiento": "2026-08-11T13:16:08.048533"
+        },
+        "clinica": {
+            "cancer": "Cáncer de Mama",
+            "codigo_enfermedad": "C50.9",
+            "descripcion": "C50.9, Malignant neoplasm of breast invasive or in situ"
+        },
+        "demografia": {
+            "edad": 61
+        },
+        "tratamiento": null
+    },
+    {
+        "patient_hash_sha256": "4ba85986d198ff93e2756983a4a66242793d7962a72d5710dec5e62085ad1335",
+        "metadata_auditoria": {
+            "ontologia_validada": "Desconocido",
+            "fecha_procesamiento": "2026-08-11T13:16:08.048533"
+        },
+        "clinica": {
+            "cancer": "Sarcoma de Útero",
+            "codigo_enfermedad": "2.16.840.1.0.0",
+            "descripcion": "Undifferentiated Pleomorphic Sarcoma of the Uterus"
+        },
+        "demografia": {
+            "edad": 61
+        },
+        "tratamiento": "Pembrolizumab"
+    },
+    {
+        "patient_hash_sha256": "4cb00151b4777291adb4180c35b234f2f12e42b4fc0e344dc49819c2b8d8470b",
+        "metadata_auditoria": {
+            "ontologia_validada": null,
+            "fecha_procesamiento": "2026-08-11T13:16:08.049543"
+        },
+        "clinica": {
+            "cancer": "No Especificado",
+            "codigo_enfermedad": null,
+            "descripcion": null
+        },
+        "demografia": {
+            "edad": null
+        },
+        "tratamiento": null
+    },
+    {
+        "patient_hash_sha256": "0b825d9541f1d3099160a958b325e38b12cc7c91db338242aa50c1e51a55dce9",
+        "metadata_auditoria": {
+            "ontologia_validada": "CIE-10",
+            "fecha_procesamiento": "2026-08-11T13:16:08.049543"
+        },
+        "clinica": {
+            "cancer": "Cáncer de Pulmón (NSCLC)",
+            "codigo_enfermedad": "C34.9",
+            "descripcion": "Cancer of unspecified bronchus and lung"
+        },
+        "demografia": {
+            "edad": 25
+        },
+        "tratamiento": "Terapia Sistémica No Especificada"
+    }
+]

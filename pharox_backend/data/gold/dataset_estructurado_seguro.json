@@ -1,0 +1,62 @@
+[
+    {
+        "patient_hash_sha256": "a4e4f12c245e8b0e2b6a623eab2ffc5a6ea76654d25850bea5b3c42ed37fbe92",
+        "datos_demograficos": {
+            "edad_estimada": 61,
+            "anio_nacimiento": "1965"
+        },
+        "datos_clinicos": {
+            "tipo_cancer": "Cáncer de Mama",
+            "cie10_diagnostico": "C50.9",
+            "diagnostico_descripcion": "C50.9, Malignant neoplasm of breast invasive or in situ"
+        },
+        "datos_tratamiento": {
+            "droga_prescripta": "Esquema sistémico indicado"
+        }
+    },
+    {
+        "patient_hash_sha256": "4ba85986d198ff93e2756983a4a66242793d7962a72d5710dec5e62085ad1335",
+        "datos_demograficos": {
+            "edad_estimada": 61,
+            "anio_nacimiento": "1965"
+        },
+        "datos_clinicos": {
+            "tipo_cancer": "Sarcoma de Útero",
+            "cie10_diagnostico": "2.16.840.1.0.0",
+            "diagnostico_descripcion": "Undifferentiated Pleomorphic Sarcoma of the Uterus"
+        },
+        "datos_tratamiento": {
+            "droga_prescripta": "Pembrolizumab"
+        }
+    },
+    {
+        "patient_hash_sha256": "4cb00151b4777291adb4180c35b234f2f12e42b4fc0e344dc49819c2b8d8470b",
+        "datos_demograficos": {
+            "edad_estimada": null,
+            "anio_nacimiento": null
+        },
+        "datos_clinicos": {
+            "tipo_cancer": "No Especificado",
+            "cie10_diagnostico": null,
+            "diagnostico_descripcion": "Evaluación oncológica registrada"
+        },
+        "datos_tratamiento": {
+            "droga_prescripta": "Esquema sistémico indicado"
+        }
+    },
+    {
+        "patient_hash_sha256": "0b825d9541f1d3099160a958b325e38b12cc7c91db338242aa50c1e51a55dce9",
+        "datos_demograficos": {
+            "edad_estimada": 25,
+            "anio_nacimiento": "2001"
+        },
+        "datos_clinicos": {
+            "tipo_cancer": "Cáncer de Pulmón (NSCLC)",
+            "cie10_diagnostico": "C34.9",
+            "diagnostico_descripcion": "Cancer of unspecified bronchus and lung"
+        },
+        "datos_tratamiento": {
+            "droga_prescripta": "Terapia Sistémica No Especificada"
+        }
+    }
+]

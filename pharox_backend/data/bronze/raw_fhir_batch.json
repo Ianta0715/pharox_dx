@@ -1,0 +1,387 @@
+[
+    {
+        "resourceType": "Bundle",
+        "fhirVersion": "4.0.1",
+        "type": [
+            "collection"
+        ],
+        "name": "PatientFictionalCarcinomaRecord",
+        "timestamp": "2023-04-01T08:00:00Z",
+        "period": {
+            "start": "2023-04 end date is not specified in the instruction, hence omitted.",
+            "end": null
+        },
+        "entry": [
+            {
+                "resource": {
+                    "id": [
+                        "paciente-1"
+                    ],
+                    "extension": [
+                        {
+                            "url": "http://hl7.org/fhir/StructureDefinition/organization",
+                            "valueString": "FictionalHealthCareCenter"
+                        }
+                    ],
+                    "meta": {
+                        "securityLabel": []
+                    },
+                    "resourceType": "Patient",
+                    "identifier": [
+                        {
+                            "system": "http://ihe.net.nhs.uk/TrialRecruitmentSystem",
+                            "value": "HC-123456789"
+                        }
+                    ],
+                    "active": true,
+                    "name": [
+                        {
+                            "use": [
+                                "usual"
+                            ],
+                            "family": "Doe",
+                            "given": [
+                                "John"
+                            ]
+                        }
+                    ],
+                    "birthDate": "1965-04-02"
+                }
+            },
+            {
+                "resource": {
+                    "id": [
+                        "condition-1"
+                    ],
+                    "extension": [
+                        {
+                            "url": "http://hl7.org/fhir/StructureDefinition/Diagnosis",
+                            "valueString": "C50.9, Malignant neoplasm of breast invasive or in situ"
+                        }
+                    ],
+                    "type": {
+                        "coding": [
+                            {
+                                "system": "http://snomed-info.com/sct",
+                                "code": "458709001",
+                                "display": "Malignant neoplasm of breast invasive or in situ"
+                            }
+                        ]
+                    },
+                    "status": "active",
+                    "clinicalStatus": {
+                        "coding": [
+                            {
+                                "system": "http://hl7.org/fhir/StructureDefinition/clinical-status",
+                                "code": "confirmed"
+                            },
+                            {
+                                "system": "http://hl7.org/snomed-info/conceptmap",
+                                "code": "24369005"
+                            }
+                        ]
+                    },
+                    "count": [
+                        {
+                            "code": "1",
+                            "onDate": "2023-04-01"
+                        }
+                    ],
+                    "diagnosis": [
+                        {
+                            "onDate": "2023s"
+                        }
+                    ]
+                }
+            }
+        ],
+        "resource": {
+            "id": [
+                "medicationrequest-1"
+            ],
+            "extension": [
+                {
+                    "url": "http://hl7.org/fhir/StructureDefinition/supporting-information",
+                    "valueString": "Pembrolizumab 300 mg IV on Day 1, every 2 weeks for treatment of metastatic NSCLC"
+                }
+            ],
+            "status": "active",
+            "intent": {
+                "coding": [
+                    {
+                        "system": "http://hl7.org/fhir/v3/ActCode",
+                        "code": "institute-provided"
+                    }
+                ]
+            },
+            "subject": [
+                "patient-1"
+            ],
+            "medicationReference": {
+                "reference": "#medicationrequest-1"
+            },
+            "startDate": "2023-04-05",
+            "dueDate": null,
+            "reasonCodeableConcept": [
+                {
+                    "coding": [
+                        {
+                            "system": "http://snomed.info/sct",
+                            "code": "67891003",
+                            "display": "(Diagnosis-related group) Malignant neoplasm of breast invasive or in situ"
+                        }
+                    ],
+                    "text": "Malignant neoplasm of mammary gland, metastatic"
+                }
+            ]
+        }
+    },
+    {
+        "resourceType": "Bundle",
+        "fhirVersion": "4.0.1",
+        "id": "bundle-3",
+        "meta": {
+            "profile": [
+                "http://hl7.org/fhir/StructureData#Patient"
+            ]
+        },
+        "entry": [
+            {
+                "fullUrl": "urn:nbn:fi:ssn:0000-00013",
+                "resource": {
+                    "id": "paciente-3",
+                    "extension": [
+                        {
+                            "url": "http://hl7.org/fhir/StructureData#type",
+                            "valueString": "Patient"
+                        }
+                    ],
+                    "identifier": [
+                        {
+                            "system": "urn:nbn:fi:ssn:0baname-nsn-315789426",
+                            "value": "paciente-3-id"
+                        }
+                    ],
+                    "active": true,
+                    "name": [
+                        {
+                            "use": "official",
+                            "family": "Larsen",
+                            "given": [
+                                "Anna"
+                            ]
+                        }
+                    ],
+                    "birthDate": "1965-04-23"
+                },
+                "status": "final",
+                "extension": [
+                    {
+                        "url": "http://hl7.org/fhir/StructureData#genderCode",
+                        "valueString": "FEMALE"
+                    }
+                ]
+            },
+            {
+                "fullUrl": "urn:nbn:fi:ssn:0000-00013/medicationrequest-456789",
+                "resource": {
+                    "id": "medicationRequest-456789",
+                    "meta": {},
+                    "status": "active",
+                    "intent": "asserted-request",
+                    "subject": {
+                        "reference": "#paciente-3"
+                    },
+                    "encounter": {
+                        "reference": "urn:nbn:fi:ssn:0000-00012/medicationrequest-456789Encounter",
+                        "display": "Paciente: Anna Larsen - Visita de seguimiento"
+                    },
+                    "reasonCodeableConcept": {
+                        "coding": [
+                            {
+                                "system": "http://snomed.info/sct",
+                                "code": "39584007",
+                                "display": "Metastatic Non-small cell lung cancer"
+                            }
+                        ],
+                        "display": "Malignant non-small cell lung cancer with metastasis to the brain and bones"
+                    },
+                    "effectivePeriod": {
+                        "start": "2023-04-15T08:00:00Z",
+                        "end": "2023-06-15T08:00:00Z"
+                    },
+                    "medicationCodeableConcept": {
+                        "coding": [
+                            {
+                                "system": "urn:oid:o-chrons",
+                                "code": "2.16.840.1.113695.4.1",
+                                "display": "Pembrolizumab"
+                            }
+                        ],
+                        "display": "Pembrolizumab for the treatment of malignant non-small cell lung cancer with metastasis to the brain and bones in adults aged 20 years or older."
+                    },
+                    "authorizingPrescriber": {
+                        "reference": "#doctor1"
+                    }
+                }
+            },
+            {
+                "fullUrl": "urn:nbn:fi:ssn:0000-00013/condition",
+                "resource": {
+                    "id": "conditon-567890",
+                    "meta": {},
+                    "code": {
+                        "coding": [
+                            {
+                                "system": "urn:oid:o-chrons",
+                                "code": "2.16.840.1.0.0",
+                                "display": "Undifferentiated Pleomorphic Sarcoma of the Uterus"
+                            }
+                        ],
+                        "display": "Pleomorphic sarcoma of uterine body in a premenopausal woman, unspecified site."
+                    },
+                    "verificationStatus": {
+                        "coding": [
+                            {
+                                "system": "",
+                                "code": "never-assessed",
+                                "display": "Never assessed"
+                            }
+                        ],
+                        "display": "Not yet verified by a professional."
+                    },
+                    "clinicalStatus": {
+                        "coding": [
+                            {
+                                "system": "",
+                                "code": "confirmed",
+                                "display": "Confirmed"
+                            }
+                        ],
+                        "display": "Clinically confirmed."
+                    },
+                    "diagnosisDate": "2023-04-15T17:30:00Z",
+                    "patient": {
+                        "reference": "#paciente-3"
+                    }
+                }
+            }
+        ]
+    },
+    {
+        "resourceType": "Bundle",
+        "fhirVersion": "4.0.1",
+        "id": "bundle-paciente-cancer-test",
+        "meta": {
+            "funder": "Test Hospital"
+        },
+        "timestamp": "2023-04-01T08:00:00Z",
+        "author": [
+            {
+                "name": "Dr. Simulated"
+            }
+        ]
+    },
+    {
+        "resourceType": "Bundle",
+        "fhirVersion": "4.0.1",
+        "id": "bundle-patient-cancer-example",
+        "type": [
+            "operation"
+        ],
+        "status": "final",
+        "category": {
+            "code": "treatment-plan",
+            "display": "Treatment Plan"
+        },
+        "subject": [
+            {
+                "reference": "#patient-5",
+                "display": "Jane Doe"
+            }
+        ],
+        "encounter": [
+            {
+                "reference": "#encounter-1",
+                "display": "Initial Diagnosis Encounter"
+            }
+        ],
+        "resource": [
+            {
+                "resourceType": "Patient",
+                "id": "paciente-5",
+                "text": {
+                    "status": "generated",
+                    "div": "<div>=+=<br/>Jane Doe</div>"
+                },
+                "name": [
+                    {
+                        "use": "official",
+                        "family": "Doe"
+                    }
+                ],
+                "birthDate": "2001-05-29"
+            },
+            {
+                "resourceType": "Condition",
+                "id": "condicion-cancer",
+                "status": "active",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "CIE-10",
+                            "code": "C34.9"
+                        }
+                    ],
+                    "text": "Cancer of unspecified bronchus and lung"
+                },
+                "clinicalTrialSponsorship": [
+                    {
+                        "reference": "#study-1",
+                        "display": "Clinical Trial Sponsored by Study ABCD1234567890XZYWVU"
+                    }
+                ]
+            },
+            {
+                "resourceType": "MedicationRequest",
+                "id": "medicacionrequest-osimertinib",
+                "status": "active",
+                "subject": [
+                    {
+                        "reference": "#patient-5"
+                    }
+                ],
+                "encounter": [
+                    {
+                        "reference": "#encounter-1"
+                    }
+                ],
+                "medicationCodeableConcept": {
+                    "coding": [
+                        {
+                            "system": "HPA",
+                            "code": "205984006"
+                        }
+                    ]
+                },
+                "authorizingPrescriber": [
+                    {
+                        "display": "Dr. Emily Smith, MD Oncology Clinic at XYZ Hospital",
+                        "reference": "#prescriptor-1"
+                    }
+                ],
+                "reasonCodeableConcept": {
+                    "coding": [
+                        {
+                            "system": "HPFA",
+                            "code": "39807-4, 39826-5"
+                        }
+                    ]
+                },
+                "dateWritten": "2023-01-15",
+                "intent": "instruct",
+                "authorOrderIndexNumericValue": 1
+            }
+        ]
+    }
+]

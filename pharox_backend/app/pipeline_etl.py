@@ -112,23 +112,58 @@ def ejecutar_pipeline_etl():
     print("-> INICIANDO PIPELINE ETL DE CIFRADO (ARQUITECTURA MEDALLION)")
     print("==================================================================")
     
+    # Determinar rutas relativas al script
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    backend_dir = os.path.dirname(script_dir)
+    data_dir = os.path.join(backend_dir, "data")
+    root_dir = os.path.dirname(backend_dir)
+    
+    # Rutas absolutas para los directorios
+    capas_paths = {
+        'bronze': os.path.join(data_dir, 'bronze'),
+        'silver': os.path.join(data_dir, 'silver'),
+        'gold': os.path.join(data_dir, 'gold')
+    }
+    
     # 0. Preparar Directorios Medallion
-    for capa in ['bronze', 'silver', 'gold']:
-        os.makedirs(capa, exist_ok=True)
-        print(f"📁 Directorio verificado: /{capa}")
+    for capa, path in capas_paths.items():
+        os.makedirs(path, exist_ok=True)
+        print(f"📁 Directorio verificado: {path}")
+
+    # Buscar el archivo de origen en distintas ubicaciones posibles
+    candidatos_origen = [
+        "dataset_sintetico_FHIR.json",
+        os.path.join(root_dir, "dataset_sintetico_FHIR.json"),
+        os.path.join(backend_dir, "dataset_sintetico_FHIR.json"),
+        os.path.join(script_dir, "dataset_sintetico_FHIR.json")
+    ]
+    
+    archivo_origen = None
+    for cand in candidatos_origen:
+        if os.path.exists(cand) and os.path.isfile(cand):
+            archivo_origen = cand
+            break
+
+    if not archivo_origen:
+        print("❌ Error: No se encontró 'dataset_sintetico_FHIR.json' en las ubicaciones esperadas:")
+        for cand in candidatos_origen:
+            print(f"   - {cand}")
+        return
+
+    print(f"📄 Cargando dataset de origen desde: {archivo_origen}")
 
     # 1. CAPA BRONZE (Ingesta cruda)
-    archivo_origen = "dataset_sintetico_FHIR.json"
     try:
         with open(archivo_origen, "r", encoding="utf-8") as f:
             bundles_crudos = json.load(f)
         
         # Guardamos una copia inmutable en Bronze
-        with open("bronze/raw_fhir_batch.json", "w", encoding="utf-8") as f:
+        path_bronze_file = os.path.join(capas_paths['bronze'], "raw_fhir_batch.json")
+        with open(path_bronze_file, "w", encoding="utf-8") as f:
             json.dump(bundles_crudos, f, indent=4)
-        print(f"🥉 [BRONZE] Ingesta de datos crudos FHIR completada. {len(bundles_crudos)} registros guardados.")
-    except FileNotFoundError:
-        print(f"❌ Error: No se encontró '{archivo_origen}'.")
+        print(f"🥉 [BRONZE] Ingesta de datos crudos FHIR completada. {len(bundles_crudos)} registros guardados en {path_bronze_file}")
+    except Exception as e:
+        print(f"❌ Error al procesar capa bronze: {e}")
         return
 
     registros_silver = []
@@ -217,13 +252,15 @@ def ejecutar_pipeline_etl():
 
     # 3. GUARDADO DE CAPAS SILVER Y GOLD
     if registros_silver and registros_gold:
-        with open("silver/anonymized_records.json", "w", encoding="utf-8") as f:
+        path_silver_file = os.path.join(capas_paths['silver'], "anonymized_records.json")
+        with open(path_silver_file, "w", encoding="utf-8") as f:
             json.dump(registros_silver, f, indent=4, ensure_ascii=False)
-        print(f"\n🥈 [SILVER] Limpieza de anomalías y Ceguera Técnica aplicadas. Archivo generado en /silver.")
+        print(f"\n🥈 [SILVER] Limpieza de anomalías y Ceguera Técnica aplicadas. Archivo generado en {path_silver_file}")
 
-        with open("gold/dataset_estructurado_seguro.json", "w", encoding="utf-8") as f:
+        path_gold_file = os.path.join(capas_paths['gold'], "dataset_estructurado_seguro.json")
+        with open(path_gold_file, "w", encoding="utf-8") as f:
             json.dump(registros_gold, f, indent=4, ensure_ascii=False)
-        print(f"🥇 [GOLD] Datos estructurados listos para cálculos de toxicidad en RAG. Archivo generado en /gold.")
+        print(f"🥇 [GOLD] Datos estructurados listos para cálculos de toxicidad en RAG. Archivo generado en {path_gold_file}")
             
         print("\n==================================================================")
         print("--- ¡PIPELINE MEDALLION FINALIZADO CON ÉXITO! ---")
