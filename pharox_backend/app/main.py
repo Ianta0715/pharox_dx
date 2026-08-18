@@ -1,6 +1,7 @@
 import os
 import json
-from fastapi import FastAPI, HTTPException
+from typing import Optional
+from fastapi import FastAPI, HTTPException, File, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -233,14 +234,14 @@ def ejecutar_y_filtrar_cypher(input_dict: dict) -> dict:
 # -------------------------------------------------------------------------
 prompt_clinico_template = """Actúas como un Copiloto Clínico Experto en Oncología de Precisión.
 Analiza la consulta médica relacionada con el tipo de cáncer: {tipo_cancer}.
-
-Basándote ESTRICTAMENTE en la evidencia recuperada de nuestra base de datos de grafos de Neo4j:
+Evidencia recuperada de nuestra base de datos de grafos de Neo4j (incluye literatura científica, estadísticas de grafos y casos clínicos reales similares):
 {evidencia}
-
 Consulta Médica del Profesional: "{question}"
-
-Responde con rigor clínico, de forma concisa, clara, estructurada y en español. 
-Si la evidencia indica "Sin evidencia" o no contiene información relevante, indícalo amablemente al médico.
+Instrucciones para estructurar tu respuesta:
+1. **Sugerencias Basadas en Casos Reales (CBR):** Si la evidencia contiene fragmentos marcados como "[CASO CLÍNICO REAL SIMILAR]", cita estos casos (mencionando edad, tratamientos aplicados, complicaciones post-operatorias y cómo se resolvieron) como sugerencias empíricas para el médico.
+2. **Recomendaciones de la Literatura Científica:** Utiliza la evidencia de estudios y papers para justificar decisiones farmacológicas o clínicas con base científica.
+3. **Claridad y Rigor:** Responde con rigor oncológico, de forma estructurada, usando viñetas claras y en español.
+4. **Ausencia de Evidencia:** Si la evidencia está vacía o no responde a la pregunta, dilo con honestidad y sugiere estudios complementarios.
 """
 
 prompt_clinico = PromptTemplate(
@@ -334,3 +335,92 @@ def ver_base_de_grafos():
             status_code=500, 
             detail=f"Error al leer base de grafos: {repr(e)}"
         )
+
+# -------------------------------------------------------------------------
+# ENDPOINT DE INGESTA DE CASOS CLÍNICOS REALES (Case-Based Reasoning)
+# -------------------------------------------------------------------------
+
+@app.post("/api/v1/casos/ingestar")
+async def ingestar_caso_clinico(
+    texto: Optional[str] = Form(None, description="Texto libre del informe anatomopatológico o descripción clínica"),
+    imagen: Optional[UploadFile] = File(None, description="Imagen (JPG/PNG) del informe médico escaneado")
+):
+    """
+    Ingesta un caso clínico real anonimizado en el grafo de conocimiento de Pharox DX.
+    
+    El sistema acepta:
+    - **texto**: Descripción libre del caso (anatomía patológica + post-operatorio)
+    - **imagen**: Foto o scan del informe (JPG, PNG) — se procesará con OCR automático
+    - **ambos**: Si se proveen imagen y texto, se combinarán para mayor precisión
+    
+    El caso queda anonimizado (hash SHA-256) y disponible para búsqueda de similitud
+    cuando lleguen nuevos pacientes con características clínicas similares.
+    """
+    from app.etl_casos_clinicos import procesar_informe
+
+    if not texto and not imagen:
+        raise HTTPException(
+            status_code=400,
+            detail="Se requiere al menos texto o imagen del informe clínico."
+        )
+
+    log_info(f"Nueva ingesta de caso clínico — imagen: {'sí' if imagen else 'no'}, texto: {'sí' if texto else 'no'}")
+
+    image_bytes = None
+    if imagen:
+        if not imagen.content_type.startswith("image/"):
+            raise HTTPException(
+                status_code=422,
+                detail=f"El archivo '{imagen.filename}' no es una imagen válida. Sube JPG o PNG."
+            )
+        image_bytes = await imagen.read()
+        log_info(f"Imagen recibida: {imagen.filename} ({len(image_bytes)} bytes)")
+
+    try:
+        resultado = procesar_informe(texto=texto, image_bytes=image_bytes)
+        log_success(f"Caso clínico ingresado: ID={resultado['caso_id']}, hallazgos={resultado['hallazgos_extraidos']}, eventos_postop={resultado['eventos_postop_extraidos']}")
+        print("\n" + "=" * 80)
+        return resultado
+    except Exception as e:
+        log_error(f"Error al ingestar caso clínico: {e}")
+        print("\n" + "=" * 80)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al procesar el caso clínico: {repr(e)}"
+        )
+
+
+@app.get("/api/v1/casos/buscar")
+def buscar_casos_similares_endpoint(consulta: str, n: int = 2):
+    """
+    Busca casos clínicos reales similares a la consulta de texto.
+    Útil para que el médico pueda explorar el repositorio de casos directamente.
+    """
+    from app.graph_db import buscar_casos_similares
+    try:
+        casos = buscar_casos_similares(consulta, n_results=n)
+        return {"success": True, "casos_encontrados": len(casos), "casos": casos}
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error en búsqueda de casos: {repr(e)}"
+        )
+
+
+class IngestaTextoRequest(BaseModel):
+    texto: str
+
+@app.post("/api/v1/casos/ingestar_texto")
+def ingestar_caso_solo_texto(req: IngestaTextoRequest):
+    """
+    Ingesta un caso clínico usando únicamente texto (sin imagen).
+    Evita los problemas de envío de archivos vacíos en Swagger UI.
+    """
+    from app.etl_casos_clinicos import procesar_informe
+    try:
+        resultado = procesar_informe(texto=req.texto, image_bytes=None)
+        log_success(f"Caso clínico (solo texto) ingresado: ID={resultado['caso_id']}")
+        return resultado
+    except Exception as e:
+        log_error(f"Error al ingestar caso de texto: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

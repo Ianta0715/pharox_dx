@@ -108,14 +108,29 @@ def buscar_archivo(nombre_archivo, directorios_adicionales=None):
 
 def inicializar_esquema(tx):
     """Crea restricciones e índice vectorial en Neo4j si no existen."""
-    # 1. Crear restricciones de unicidad
+    # 1. Crear restricciones de unicidad existentes
     tx.run("CREATE CONSTRAINT unique_patient_hash IF NOT EXISTS FOR (p:Paciente) REQUIRE p.hash IS UNIQUE")
     tx.run("CREATE CONSTRAINT unique_tumor_type IF NOT EXISTS FOR (t:Tumor) REQUIRE t.tipo_cancer IS UNIQUE")
-    
-    # 2. Crear índice vectorial para el campo embedding en nodos :Literatura (dimensión 768 para nomic-embed-text)
+
+    # 2. Índice vectorial para literatura oncológica (768 dims para nomic-embed-text)
     tx.run("""
         CREATE VECTOR INDEX literature_vectors IF NOT EXISTS
         FOR (n:Literatura) ON (n.embedding)
+        OPTIONS {indexConfig: {
+            `vector.dimensions`: 768,
+            `vector.similarity_function`: 'cosine'
+        }}
+    """)
+
+    # 3. Nuevas restricciones para casos clínicos reales
+    tx.run("CREATE CONSTRAINT unique_caso_id IF NOT EXISTS FOR (c:CasoClinico) REQUIRE c.id IS UNIQUE")
+    tx.run("CREATE CONSTRAINT unique_hallazgo_id IF NOT EXISTS FOR (h:HallazgoPatologico) REQUIRE h.id IS UNIQUE")
+    tx.run("CREATE CONSTRAINT unique_evento_id IF NOT EXISTS FOR (e:EventoPostOperatorio) REQUIRE e.id IS UNIQUE")
+
+    # 4. Índice vectorial para casos clínicos reales (búsqueda por similitud)
+    tx.run("""
+        CREATE VECTOR INDEX caso_clinico_vectors IF NOT EXISTS
+        FOR (c:CasoClinico) ON (c.embedding)
         OPTIONS {indexConfig: {
             `vector.dimensions`: 768,
             `vector.similarity_function`: 'cosine'
@@ -250,6 +265,54 @@ def inicializar_db():
     else:
         print(f"Omitiendo ingesta de historial clínico. Ya contiene {paciente_count} pacientes.")
 
+def buscar_casos_similares(texto_consulta: str, n_results: int = 2) -> list[str]:
+    """
+    Busca casos clínicos reales similares a la consulta usando el índice vectorial
+    de nodos :CasoClinico y enriquece el resultado con eventos post-operatorios asociados.
+    Retorna una lista de strings formateados para incluir como contexto en la síntesis clínica.
+    """
+    contextos = []
+    g = get_graph()
+
+    try:
+        query_vector = generar_embedding(texto_consulta)
+        res = g.query("""
+            CALL db.index.vector.queryNodes('caso_clinico_vectors', $n_results, $query_vector)
+            YIELD node AS caso, score
+            WHERE score > 0.6
+            OPTIONAL MATCH (caso)-[:INCLUYE_HALLAZGO]->(hp:HallazgoPatologico)
+            OPTIONAL MATCH (caso)-[:TUVO_EVENTO_POSTOP]->(ev:EventoPostOperatorio)
+            RETURN
+                caso.resumen_clinico AS resumen,
+                collect(DISTINCT hp.subtipo_molecular + ' mama ' + hp.lateralidad + ' - ' + hp.procedimiento) AS hallazgos,
+                collect(DISTINCT ev.tipo_evento + ': ' + ev.detalle_resolucion + ' → ' + ev.resultado) AS eventos,
+                score
+            ORDER BY score DESC
+        """, {"n_results": n_results, "query_vector": query_vector})
+
+        for record in res:
+            hallazgos_str = "; ".join([h for h in record.get("hallazgos", []) if h])
+            eventos_str = "; ".join([e for e in record.get("eventos", []) if e])
+            score = record.get("score", 0)
+
+            contexto = (
+                f"[CASO CLÍNICO REAL SIMILAR — similitud: {score:.2f}] "
+                f"{record.get('resumen', '')}"
+            )
+            if hallazgos_str:
+                contexto += f" | Hallazgos: {hallazgos_str}"
+            if eventos_str:
+                contexto += f" | Complicaciones post-op: {eventos_str}"
+
+            contextos.append(contexto)
+            print(f"[Casos Similares] Caso encontrado con score {score:.2f}")
+
+    except Exception as e:
+        print(f"[Casos Similares] Error en búsqueda vectorial de casos: {e}")
+
+    return contextos
+
+
 def buscar_contexto_hibrido(query: str, tipo_cancer: str = None, n_results: int = 3) -> list[str]:
     """
     Realiza una búsqueda híbrida (Graph RAG) utilizando Neo4jGraph de LangChain:
@@ -302,7 +365,16 @@ def buscar_contexto_hibrido(query: str, tipo_cancer: str = None, n_results: int 
                 contextos.append(historial_str)
         except Exception as e:
             print(f"Error en consulta de relaciones Neo4j: {e}")
-            
+
+    # 3. Búsqueda de Casos Clínicos Reales Similares (Case-Based Reasoning)
+    try:
+        casos_similares = buscar_casos_similares(query, n_results=2)
+        if casos_similares:
+            contextos.extend(casos_similares)
+            print(f"[Híbrida] {len(casos_similares)} caso(s) clínico(s) real(es) recuperado(s).")
+    except Exception as e:
+        print(f"Error en búsqueda de casos clínicos similares: {e}")
+
     return contextos
 
 def obtener_estado_grafo():

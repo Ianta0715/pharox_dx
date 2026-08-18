@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "runpod": {
+      "serverUrl": "https://mcp.getrunpod.io/"
+    }
+  }
+}
