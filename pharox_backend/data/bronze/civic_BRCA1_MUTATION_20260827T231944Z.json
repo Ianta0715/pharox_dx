@@ -1,0 +1,941 @@
+{
+  "id": 185,
+  "name": "Mutation",
+  "link": "/variants/185",
+  "deprecated": false,
+  "variantTypes": [
+    {
+      "id": 30,
+      "name": "Gene Variant",
+      "url": "http://www.sequenceontology.org/browser/current_svn/term/SO:0001564"
+    },
+    {
+      "id": 161,
+      "name": "Loss Of Function Variant",
+      "url": "http://www.sequenceontology.org/browser/current_svn/term/SO:0002054"
+    }
+  ],
+  "feature": {
+    "id": 6,
+    "name": "BRCA1",
+    "featureType": "GENE",
+    "description": "BRCA1 mutations in the germline have become a hallmark for hereditary breast and ovarian cancers. Variants that have been demonstrated to reduce the function of the protein have been shown to increase the risk for these cancers, as well as prostate and pancreatic cancer. These findings have been the impetus for the increased popularity of genetic testing of healthy individuals to assess risk. Recent studies in ovarian cancer have also demonstrated that BRCA mutation status can predict treatment response. A number of trials assessing BRCA mutation status have shown an improved response to platinum agents, and more recently has led to the FDA-approval of PARP inhibitors for BRCA-positive ovarian cancers. These studies have resulted in the Society of Gynecologic Oncology to recommend germline BRCA testing in all patients with a diagnosis of ovarian cancer.",
+    "featureInstance": {
+      "id": 6,
+      "name": "BRCA1",
+      "entrezId": 672
+    }
+  },
+  "singleVariantMolecularProfile": {
+    "id": 185,
+    "name": "BRCA1 Mutation",
+    "description": null,
+    "molecularProfileScore": 455.0,
+    "evidenceCountsByStatus": {
+      "acceptedCount": 21,
+      "submittedCount": 11,
+      "rejectedCount": 1
+    },
+    "evidenceCountsByType": {
+      "diagnosticCount": 0,
+      "predictiveCount": 30,
+      "predisposingCount": 0,
+      "prognosticCount": 2,
+      "oncogenicCount": 0,
+      "functionalCount": 0
+    },
+    "evidenceItems": {
+      "totalCount": 32,
+      "nodes": [
+        {
+          "id": 464,
+          "name": "EID464",
+          "description": "In patients with invasive epithelial ovarian cancer, those with mutations in BRCA1 had better five-year overall survival.",
+          "evidenceType": "PROGNOSTIC",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 3,
+          "significance": "BETTER_OUTCOME",
+          "status": "ACCEPTED",
+          "variantOrigin": "RARE_GERMLINE",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 225,
+            "name": "Epithelial Ovarian Cancer",
+            "doid": "2152",
+            "displayName": "Epithelial Ovarian Cancer"
+          },
+          "therapies": [],
+          "source": {
+            "id": 279,
+            "citationId": "22274685",
+            "sourceType": "PUBMED",
+            "citation": "Bolton et al., 2012",
+            "publicationYear": 2012,
+            "journal": "JAMA",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/22274685"
+          }
+        },
+        {
+          "id": 1775,
+          "name": "EID1775",
+          "description": "In a study of 26 patients with breast cancer, 10 patients were BRCA-positive and 16 patients were BRCA-negative.  Regardless of BRCA status, none showed objective response when treated with olaparib.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 3,
+          "significance": "RESISTANCE",
+          "status": "ACCEPTED",
+          "variantOrigin": "RARE_GERMLINE",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 370,
+            "name": "Triple-negative Breast Cancer",
+            "doid": "0060081",
+            "displayName": "Triple-negative Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 42,
+              "name": "Olaparib",
+              "ncitId": "C71721"
+            }
+          ],
+          "source": {
+            "id": 1239,
+            "citationId": "21862407",
+            "sourceType": "PUBMED",
+            "citation": "Gelmon et al., 2011",
+            "publicationYear": 2011,
+            "journal": "Lancet Oncol",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/21862407"
+          }
+        },
+        {
+          "id": 1772,
+          "name": "EID1772",
+          "description": "In a study of 63 patients with ovarian cancer, 17 patients had BRCA1 or BRCA2 mutations and 46 patients had no BRCA mutations.  Of the BRCA-positive patients, 7/17(41%; 95%CI 22-64) showed objective response to olaparib whereas only 11/46 BRCA-negative patients (24%; 95%CI 14-38) showed objective response to olaparib.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 3,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "RARE_GERMLINE",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 20,
+            "name": "Ovarian Cancer",
+            "doid": "2394",
+            "displayName": "Ovarian Cancer"
+          },
+          "therapies": [
+            {
+              "id": 42,
+              "name": "Olaparib",
+              "ncitId": "C71721"
+            }
+          ],
+          "source": {
+            "id": 1239,
+            "citationId": "21862407",
+            "sourceType": "PUBMED",
+            "citation": "Gelmon et al., 2011",
+            "publicationYear": 2011,
+            "journal": "Lancet Oncol",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/21862407"
+          }
+        },
+        {
+          "id": 1531,
+          "name": "EID1531",
+          "description": "In a study of ovarian carcinomas, 87% of tumors with somatic BRCA1/2 mutations were platinum sensitive, whereas only 60% of tumors with non-BRCA1/2 mutations were platinum sensitive (N=38; N=158; P=0.002). Sensitivity to platinum was defined by maintenance of complete response greater than 6 months post platinum-based therapy.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 3,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 47,
+            "name": "Ovarian Carcinoma",
+            "doid": "4001",
+            "displayName": "Ovarian Carcinoma"
+          },
+          "therapies": [
+            {
+              "id": 103,
+              "name": "Platinum Compound",
+              "ncitId": "C1450"
+            }
+          ],
+          "source": {
+            "id": 1020,
+            "citationId": "24240112",
+            "sourceType": "PUBMED",
+            "citation": "Pennington et al., 2014",
+            "publicationYear": 2014,
+            "journal": "Clin Cancer Res",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/24240112"
+          }
+        },
+        {
+          "id": 1529,
+          "name": "EID1529",
+          "description": "In a study of ovarian carcinomas, 81% of tumors with germline BRCA1/2 mutations were platinum sensitive, whereas only 60% of tumors with non-BRCA1/2 mutations were platinum sensitive (N=47; N=158; P=0.01). Sensitivity was defined by maintenance of complete response greater than 6 months post platinum-based therapy.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 3,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "RARE_GERMLINE",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 47,
+            "name": "Ovarian Carcinoma",
+            "doid": "4001",
+            "displayName": "Ovarian Carcinoma"
+          },
+          "therapies": [
+            {
+              "id": 103,
+              "name": "Platinum Compound",
+              "ncitId": "C1450"
+            }
+          ],
+          "source": {
+            "id": 1020,
+            "citationId": "24240112",
+            "sourceType": "PUBMED",
+            "citation": "Pennington et al., 2014",
+            "publicationYear": 2014,
+            "journal": "Clin Cancer Res",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/24240112"
+          }
+        },
+        {
+          "id": 1677,
+          "name": "EID1677",
+          "description": "46 women with platinum-sensitive, high-grade, BRCA1/2+ ovarian cancer received either olaparib monotherapy or olaparib/cediranib combination therapy.  Median PFS was increased in combination therapy (17.7 months versus 9.0 months; HR=0.42; 95%CI 0.23-0.76; p=0.005); overall response rate was increased in the combination therapy (79.6% versus 47.8%; p=0.002); and total deaths were reduced in combination therapy (6 patients versus 10 patients).",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 3,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "RARE_GERMLINE",
+          "therapyInteractionType": "COMBINATION",
+          "disease": {
+            "id": 20,
+            "name": "Ovarian Cancer",
+            "doid": "2394",
+            "displayName": "Ovarian Cancer"
+          },
+          "therapies": [
+            {
+              "id": 42,
+              "name": "Olaparib",
+              "ncitId": "C71721"
+            },
+            {
+              "id": 400,
+              "name": "Cediranib",
+              "ncitId": "C80867"
+            }
+          ],
+          "source": {
+            "id": 1134,
+            "citationId": "25218906",
+            "sourceType": "PUBMED",
+            "citation": "Liu et al., 2014",
+            "publicationYear": 2014,
+            "journal": "Lancet Oncol",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/25218906"
+          }
+        },
+        {
+          "id": 1675,
+          "name": "EID1675",
+          "description": "664 patients with non-bulky FIGO Stage II-IV ovarian cancer were evaluated for PFS when treated with Pazopanib versus placebo.  Of the 664 patients, 10% (n=68) were BRCA1+, 4% were BRCA 2+ (n=29) and 85% (n=567) were BCRA1/2 negative.  Longer progression free survival was observed in BRCA1/2 positive carriers versus BRCA1/2 negative carriers in both the Pazopanib arm and the placebo arm, however, due to small sample size, the PFS increase in the Pazopanib arm was not statistically significant.",
+          "evidenceType": "PROGNOSTIC",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 3,
+          "significance": "BETTER_OUTCOME",
+          "status": "ACCEPTED",
+          "variantOrigin": "RARE_GERMLINE",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 20,
+            "name": "Ovarian Cancer",
+            "doid": "2394",
+            "displayName": "Ovarian Cancer"
+          },
+          "therapies": [],
+          "source": {
+            "id": 1133,
+            "citationId": "26740259",
+            "sourceType": "PUBMED",
+            "citation": "Harter et al., 2016",
+            "publicationYear": 2016,
+            "journal": "Gynecol Oncol",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/26740259"
+          }
+        },
+        {
+          "id": 1684,
+          "name": "EID1684",
+          "description": "In an evaluation of 77 patients, those who had BRCA1/2 germline mutations (n=11) had an increase response rate to cisplatin when compared to those without germline mutations (54.5% versus 19.7%; P=0.022) although progression free survival and overall survival was not significantly different.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 3,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "RARE_GERMLINE",
+          "therapyInteractionType": "SUBSTITUTES",
+          "disease": {
+            "id": 370,
+            "name": "Triple-negative Breast Cancer",
+            "doid": "0060081",
+            "displayName": "Triple-negative Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 326,
+              "name": "Cisplatin",
+              "ncitId": "C376"
+            },
+            {
+              "id": 93,
+              "name": "Carboplatin",
+              "ncitId": "C1282"
+            }
+          ],
+          "source": {
+            "id": 1137,
+            "citationId": "25847936",
+            "sourceType": "PUBMED",
+            "citation": "Isakoff et al., 2015",
+            "publicationYear": 2015,
+            "journal": "J Clin Oncol",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/25847936"
+          }
+        },
+        {
+          "id": 7459,
+          "name": "EID7459",
+          "description": "In a retrospective study, 23 consecutive patients with prostate cancer harboring germline BRCA1/2 or ATM mutations were treated with olaparib were reviewed.\nThis study included 2 patients with BRCA1 mutations, 15 patients with BRCA2 mutations, and 6 patients with ATM mutations.\nPSA response rate was 76% (13/17) in patients with BRCA1/2 mutations, and 0% (0/6) in patients with ATM mutations.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 3,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "SUBMITTED",
+          "variantOrigin": "RARE_GERMLINE",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 46,
+            "name": "Prostate Cancer",
+            "doid": "10283",
+            "displayName": "Prostate Cancer"
+          },
+          "therapies": [
+            {
+              "id": 42,
+              "name": "Olaparib",
+              "ncitId": "C71721"
+            }
+          ],
+          "source": {
+            "id": 2956,
+            "citationId": "30797618",
+            "sourceType": "PUBMED",
+            "citation": "Marshall et al., 2019",
+            "publicationYear": 2019,
+            "journal": "Eur Urol",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/30797618"
+          }
+        },
+        {
+          "id": 6333,
+          "name": "EID6333",
+          "description": "In patients with platinum-sensitive, recurrent serous ovarian cancer with BRCA mutation, median PFS was significantly longer in patients that received olaparib as compared to placebo (11.2 vs. 4.3 months). Similar findings were present in the wild-type BRCA subset, but to a lesser extent (7.4 vs. 5.5 months). There was no statistically significant difference in overall survival.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 4,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "SUBMITTED",
+          "variantOrigin": "RARE_GERMLINE",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 87,
+            "name": "Ovarian Serous Carcinoma",
+            "doid": "0050933",
+            "displayName": "Ovarian Serous Carcinoma"
+          },
+          "therapies": [
+            {
+              "id": 42,
+              "name": "Olaparib",
+              "ncitId": "C71721"
+            }
+          ],
+          "source": {
+            "id": 2510,
+            "citationId": "24882434",
+            "sourceType": "PUBMED",
+            "citation": "Ledermann et al., 2014",
+            "publicationYear": 2014,
+            "journal": "Lancet Oncol",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/24882434"
+          }
+        },
+        {
+          "id": 5932,
+          "name": "EID5932",
+          "description": "In Phase I study for pancreatic cancer patients\nGEM 600 mg/m2 + CDDP 25 mg/m2 + Veliparib 20 - 80 mg twice daily showed response rate of  77.8% (7/9) and mOS of 23.3 months in germline BRCA mutation-positive patients with stage IV disease.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 3,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "RARE_GERMLINE",
+          "therapyInteractionType": "COMBINATION",
+          "disease": {
+            "id": 556,
+            "name": "Pancreatic Cancer",
+            "doid": "1793",
+            "displayName": "Pancreatic Cancer"
+          },
+          "therapies": [
+            {
+              "id": 556,
+              "name": "Veliparib",
+              "ncitId": "C60768"
+            },
+            {
+              "id": 85,
+              "name": "Gemcitabine",
+              "ncitId": "C66876"
+            },
+            {
+              "id": 326,
+              "name": "Cisplatin",
+              "ncitId": "C376"
+            }
+          ],
+          "source": {
+            "id": 2405,
+            "citationId": "29338080",
+            "sourceType": "PUBMED",
+            "citation": "O'Reilly et al., 2018",
+            "publicationYear": 2018,
+            "journal": "Cancer",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/29338080"
+          }
+        },
+        {
+          "id": 5915,
+          "name": "EID5915",
+          "description": "Patients with BRCA1/2 associated pancreatic adenocarcinoma were evaluated retrospectively.\nIn patients with stage 3 and 4, the median overall survival (mOS) was 22 months for the platinum exposed (n=22), compared with 9 months for the non-platinum (n=21) treatment groups (p<0.039)",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 4,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "RARE_GERMLINE",
+          "therapyInteractionType": "SUBSTITUTES",
+          "disease": {
+            "id": 556,
+            "name": "Pancreatic Cancer",
+            "doid": "1793",
+            "displayName": "Pancreatic Cancer"
+          },
+          "therapies": [
+            {
+              "id": 326,
+              "name": "Cisplatin",
+              "ncitId": "C376"
+            },
+            {
+              "id": 237,
+              "name": "Oxaliplatin",
+              "ncitId": "C1181"
+            }
+          ],
+          "source": {
+            "id": 2389,
+            "citationId": "25072261",
+            "sourceType": "PUBMED",
+            "citation": "Golan et al., 2014",
+            "publicationYear": 2014,
+            "journal": "Br J Cancer",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/25072261"
+          }
+        },
+        {
+          "id": 5914,
+          "name": "EID5914",
+          "description": "Twenty-three patients with pancreatic cancer havoring BRCA1/2 germline mutations received olaparib. Five (21.7%) patients had a BRCA1 mutation. All but one had received prior gemcitabine, and 65% had received prior platinum. Tumor response rate was 21.7% and stable disease more than 8 weeks was 35%.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 3,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "RARE_GERMLINE",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 556,
+            "name": "Pancreatic Cancer",
+            "doid": "1793",
+            "displayName": "Pancreatic Cancer"
+          },
+          "therapies": [
+            {
+              "id": 42,
+              "name": "Olaparib",
+              "ncitId": "C71721"
+            }
+          ],
+          "source": {
+            "id": 2388,
+            "citationId": "25366685",
+            "sourceType": "PUBMED",
+            "citation": "Kaufman et al., 2015",
+            "publicationYear": 2015,
+            "journal": "J Clin Oncol",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/25366685"
+          }
+        },
+        {
+          "id": 7470,
+          "name": "EID7470",
+          "description": "In a phase 2 trial, patients with metastatic castration-resistant prostate cancer harboring DNA damage repair (DDR) gene aberrations were treated with olaparib. In gene testing, samples from tumor tissue were used. In biomarker definition, biallelic events were not mandated. RECIST tumor response in patients harboring BRCA1/2, ATM, CDK12, and PALB2 mutations were 52.4% (11/21), 8.3% (1/12), 0% (0/18), and 33.3% (2/6) respectively.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 4,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "SUBMITTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 46,
+            "name": "Prostate Cancer",
+            "doid": "10283",
+            "displayName": "Prostate Cancer"
+          },
+          "therapies": [
+            {
+              "id": 42,
+              "name": "Olaparib",
+              "ncitId": "C71721"
+            }
+          ],
+          "source": {
+            "id": 2961,
+            "citationId": "172904",
+            "sourceType": "ASCO",
+            "citation": "Joaquin Mateo, 2019, ASCO Annual Meeting, Abstract 5005",
+            "publicationYear": 2019,
+            "journal": "J Clin Oncol 37, 2019 (suppl; abstr 5005)",
+            "sourceUrl": "https://doi.org/172904"
+          }
+        },
+        {
+          "id": 6341,
+          "name": "EID6341",
+          "description": "A phase 2 trial on patients with relapsed, platinum-sensitive high grade ovarian, fallopian tube or primary peritoneal carcinoma (ARIEL2 Part1, NCT01891344) was held to assess PARP inhibitor rucaparib on 3 genetically defined subsets of patients. Out of 40 BRCA (BRCA1 or BRCA2) mutant patients, 14 had germline BRCA1 mutation, 13 of which were homozygous mutation and one with unknown zygosity. Confirmed objective response was seen in 86% (12/14) of the germline BRCA1 mutant subgroup. Authors note that response rate was similar regardless of whether the BRCA mutation was somatic or germline, in BRCA 1 or BRCA 2. In a BRCA wild-type subgroup, with low levels of loss of heterozygosity (LOH), confirmed objective response was observed in 10% (7/70) of the patients. Patients with BRCA mutant tumors experienced significantly longer median progression free survival than patients with BRCA wildtype, LOH low tumors (12.8 vs 5.2 mo, HR: 0.27, P<0.0001).",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 3,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "RARE_GERMLINE",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 20,
+            "name": "Ovarian Cancer",
+            "doid": "2394",
+            "displayName": "Ovarian Cancer"
+          },
+          "therapies": [
+            {
+              "id": 431,
+              "name": "Rucaparib",
+              "ncitId": "C137800"
+            }
+          ],
+          "source": {
+            "id": 1328,
+            "citationId": "27908594",
+            "sourceType": "PUBMED",
+            "citation": "Swisher et al., 2017",
+            "publicationYear": 2017,
+            "journal": "Lancet Oncol",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/27908594"
+          }
+        },
+        {
+          "id": 1370,
+          "name": "EID1370",
+          "description": "In this phase 1 trial, 60 patients with advanced solid tumors (ovarian, breast, colorectal, melanoma, sarcoma, prostate) were treated with PARP inhibitor olaparib. Durable antitumor activity was only observed in BRCA1/2 mutation carriers. 19 BRCA carriers had ovarian, breast, or prostate cancers; 12 of these (63%) had a clinical benefit from treatment with olaparib: radiologic or tumor-marker responses or meaningful disease stabilization (stable disease for a period of 4 months or more). Nine BRCA carriers had a response according to RECIST, with the response sustained for more than 76 weeks in one patient. No responses were seen in patients without BRCA mutation.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 4,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "RARE_GERMLINE",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 216,
+            "name": "Cancer",
+            "doid": "162",
+            "displayName": "Cancer"
+          },
+          "therapies": [
+            {
+              "id": 42,
+              "name": "Olaparib",
+              "ncitId": "C71721"
+            }
+          ],
+          "source": {
+            "id": 359,
+            "citationId": "19553641",
+            "sourceType": "PUBMED",
+            "citation": "Fong et al., 2009",
+            "publicationYear": 2009,
+            "journal": "N Engl J Med",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/19553641"
+          }
+        },
+        {
+          "id": 7275,
+          "name": "EID7275",
+          "description": "In the phase 3 SOLO1 trial 390 patients with newly diagnosed advanced ovarian cancer with a mutation in BRCA1 or BRCA2 who had complete or partial response after platinum-based chemotherapy were randomized 2:1 to receive olaparib or placebo. Two patients were found to have somatic BRCA1/2 mutations. Analysis of PFS by blinded independent review found freedom from disease progression or death at 3 years was 69% in the olaparib arm compared with 35% in the placebo arm (hazard ratio for disease progression or death, 0.28; 95% CI, 0.20 to 0.39; P<0.001).",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "A",
+          "evidenceRating": 1,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 20,
+            "name": "Ovarian Cancer",
+            "doid": "2394",
+            "displayName": "Ovarian Cancer"
+          },
+          "therapies": [
+            {
+              "id": 42,
+              "name": "Olaparib",
+              "ncitId": "C71721"
+            }
+          ],
+          "source": {
+            "id": 2867,
+            "citationId": "30345884",
+            "sourceType": "PUBMED",
+            "citation": "Moore et al., 2018",
+            "publicationYear": 2018,
+            "journal": "N Engl J Med",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/30345884"
+          }
+        },
+        {
+          "id": 7274,
+          "name": "EID7274",
+          "description": "In the phase 3 SOLO1 trial 390 patients with newly diagnosed advanced ovarian cancer with a mutation in BRCA1 or BRCA2 who had complete or partial response after platinum-based chemotherapy were randomized 2:1 to receive olaparib or placebo. The olaparib arm had 191 patients with BRCA1 mutation, 66 BRCA2, and 3 patients with both BRCA1 and BRCA2, while the placebo arm had 91 BRCA1 and 40 BRCA2 mutant patients. Analysis of PFS by blinded independent review found freedom from disease progression or death at 3 years was 69% in the olaparib arm compared with 35% in the placebo arm (hazard ratio for disease progression or death, 0.28; 95% CI, 0.20 to 0.39; P<0.001).",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "A",
+          "evidenceRating": 5,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "RARE_GERMLINE",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 20,
+            "name": "Ovarian Cancer",
+            "doid": "2394",
+            "displayName": "Ovarian Cancer"
+          },
+          "therapies": [
+            {
+              "id": 42,
+              "name": "Olaparib",
+              "ncitId": "C71721"
+            }
+          ],
+          "source": {
+            "id": 2867,
+            "citationId": "30345884",
+            "sourceType": "PUBMED",
+            "citation": "Moore et al., 2018",
+            "publicationYear": 2018,
+            "journal": "N Engl J Med",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/30345884"
+          }
+        },
+        {
+          "id": 11136,
+          "name": "EID11136",
+          "description": "Combined meta-analysis of Study 10 (NCT01482715, phase I/II) and ARIEL2 (NCT01891344, phase II), both multi-centre, open-label, single-arm trials evaluating rucaparib in ovarian cancer with BRCA1 or BRCA2 deleterious germline or somatic mutations. Mutation status was determined by local testing or by central Foundation Medicine sequencing. Of 106 patients, OR was 53.8% (95% CI, 43.8-63.5); 8.5% and 45.3% of patients achieved complete and partial responses, respectively. Median duration of response was 9.2 months (95% CI, 6.6-11.6). Response rates by gene/mutation: BRCA1/2 germline (n=88, OR 53.4); BRCA1/2 somatic (n=18, OR 55.6); BRCA1 (n=67, OR 53.7); BRCA2 (n=39, OR 53.8).",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "A",
+          "evidenceRating": 5,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 20,
+            "name": "Ovarian Cancer",
+            "doid": "2394",
+            "displayName": "Ovarian Cancer"
+          },
+          "therapies": [
+            {
+              "id": 431,
+              "name": "Rucaparib",
+              "ncitId": "C137800"
+            }
+          ],
+          "source": {
+            "id": 4560,
+            "citationId": "28882436",
+            "sourceType": "PUBMED",
+            "citation": "Oza et al., 2017",
+            "publicationYear": 2017,
+            "journal": "Gynecol Oncol",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/28882436"
+          }
+        },
+        {
+          "id": 11138,
+          "name": "EID11138",
+          "description": "Combined meta-analysis of Study 10 (NCT01482715, phase I/II) and ARIEL2 (NCT01891344, phase II), both multi-centre, open-label, single-arm trials evaluating rucaparib in ovarian cancer with BRCA1 or BRCA2 deleterious germline or somatic mutations. Mutation status was determined by local testing or by central Foundation Medicine sequencing. Of 106 patients, OR was 53.8% (95% CI, 43.8-63.5); 8.5% and 45.3% of patients achieved complete and partial responses, respectively. Median duration of response was 9.2 months (95% CI, 6.6-11.6). Response rates by gene/mutation: BRCA1/2 germline (n=88, OR 53.4); BRCA1/2 somatic (n=18, OR 55.6); BRCA1 (n=67, OR 53.7); BRCA2 (n=39, OR 53.8).",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "A",
+          "evidenceRating": 5,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "RARE_GERMLINE",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 20,
+            "name": "Ovarian Cancer",
+            "doid": "2394",
+            "displayName": "Ovarian Cancer"
+          },
+          "therapies": [
+            {
+              "id": 431,
+              "name": "Rucaparib",
+              "ncitId": "C137800"
+            }
+          ],
+          "source": {
+            "id": 4560,
+            "citationId": "28882436",
+            "sourceType": "PUBMED",
+            "citation": "Oza et al., 2017",
+            "publicationYear": 2017,
+            "journal": "Gynecol Oncol",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/28882436"
+          }
+        },
+        {
+          "id": 5934,
+          "name": "EID5934",
+          "description": "Veliparib 400mg BID was administered to patients with germline BRCA1/2-mutated pancreatic cancer. Sixteen patients were enrolled. All except two (12.5%) had previously been treated with platinum therapy. No confirmed partial response was observed. One patient who had received prior single-agent gemcitabine only had an unconfirmed PR.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "DOES_NOT_SUPPORT",
+          "evidenceLevel": "B",
+          "evidenceRating": 3,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "RARE_GERMLINE",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 556,
+            "name": "Pancreatic Cancer",
+            "doid": "1793",
+            "displayName": "Pancreatic Cancer"
+          },
+          "therapies": [
+            {
+              "id": 556,
+              "name": "Veliparib",
+              "ncitId": "C60768"
+            }
+          ],
+          "source": {
+            "id": 2406,
+            "citationId": "29223478",
+            "sourceType": "PUBMED",
+            "citation": "Lowery et al., 2018",
+            "publicationYear": 2018,
+            "journal": "Eur J Cancer",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/29223478"
+          }
+        },
+        {
+          "id": 5830,
+          "name": "EID5830",
+          "description": "Randomized, open-label, phase 3 trial in which olaparib monotherapy was compared with standard therapy in patients with a germline BRCA mutation HER2–negative metastatic breast cancer. 205 patients were assigned to receive olaparib and 97 were assigned to receive standard therapy. Median progression-free survival was significantly longer in the olaparib group than in the standard-therapy group (7.0 months vs. 4.2 months; hazard ratio 0.58; 95%CI 0.43 to 0.80; P<0.001). A response to treatment occurred in 100 of the 167 patients who had measurable disease in the olaparib group (59.9%; 95% CI, 52.0 to 67.4) and in 19 of the 66 patients in the standard-therapy group (28.8%; 95% CI, 18.3 to 41.3). A complete response was seen in 9.0% of the patients who had measurable disease in the olaparib group and in 1.5% in the standard-therapy group.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 4,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "RARE_GERMLINE",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 369,
+            "name": "HER2 Negative Breast Cancer",
+            "doid": "0060080",
+            "displayName": "HER2 Negative Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 42,
+              "name": "Olaparib",
+              "ncitId": "C71721"
+            }
+          ],
+          "source": {
+            "id": 2357,
+            "citationId": "28792849",
+            "sourceType": "PUBMED",
+            "citation": "2017",
+            "publicationYear": 2017,
+            "journal": "N Engl J Med",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/28792849"
+          }
+        },
+        {
+          "id": 7435,
+          "name": "EID7435",
+          "description": "In a phase 2 trial, patients with advanced pancreatic cancer harboring germline or somatic BRCA1/2 mutation were treated with PARP inhibitor Rucaparib.\nIn this trial, none of four patients with germline BRCA1 mutations showed tumor response.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "DOES_NOT_SUPPORT",
+          "evidenceLevel": "C",
+          "evidenceRating": 3,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "SUBMITTED",
+          "variantOrigin": "RARE_GERMLINE",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 556,
+            "name": "Pancreatic Cancer",
+            "doid": "1793",
+            "displayName": "Pancreatic Cancer"
+          },
+          "therapies": [
+            {
+              "id": 431,
+              "name": "Rucaparib",
+              "ncitId": "C137800"
+            }
+          ],
+          "source": {
+            "id": 2934,
+            "citationId": "30051098",
+            "sourceType": "PUBMED",
+            "citation": "Shroff et al., 2018",
+            "publicationYear": 2018,
+            "journal": "JCO Precis Oncol",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/30051098"
+          }
+        },
+        {
+          "id": 1897,
+          "name": "EID1897",
+          "description": "A phase 2 trial on patients with relapsed, platinum-sensitive high grade ovarian, fallopian tube or primary peritoneal carcinoma (ARIEL2 Part1, NCT01891344) was held to assess PARP inhibitor rucaparib on 3 genetically defined subsets of patients. Out of 40 BRCA mutant (BRCA1 or BRCA2) patients, 14 had homozygous somatic BRCA1 mutation or deletion. Confirmed objective response was seen in 71% (10/14) of the somatic BRCA1 mutant subgroup. Authors note that response rate was similar regardless of whether the BRCA mutation was somatic or germline, in BRCA 1 or BRCA 2. In a BRCA wild-type subgroup, with low levels of loss of heterozygosity (LOH), confirmed objective response was observed in 10% (7/70) of the patients. Patients with BRCA mutant tumors experienced significantly longer median progression free survival than patients with BRCA wildtype, LOH low tumors (12.8 vs 5.2 mo, HR: 0.27, P<0.0001).",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 3,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 20,
+            "name": "Ovarian Cancer",
+            "doid": "2394",
+            "displayName": "Ovarian Cancer"
+          },
+          "therapies": [
+            {
+              "id": 431,
+              "name": "Rucaparib",
+              "ncitId": "C137800"
+            }
+          ],
+          "source": {
+            "id": 1328,
+            "citationId": "27908594",
+            "sourceType": "PUBMED",
+            "citation": "Swisher et al., 2017",
+            "publicationYear": 2017,
+            "journal": "Lancet Oncol",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/27908594"
+          }
+        },
+        {
+          "id": 9019,
+          "name": "EID9019",
+          "description": "The non-randomized, sequential phase II ICEBERG trial evaluated the efficacy and safety of olaparib monotherapy in 54 patients (2 cohorts of 27 patients, treated with 400mg or 100 mg twice daily) with a germline BRCA1 or BRCA2 mutation and metastatic or locally advanced breast cancer. 34 patients had mutations in only BRCA1, 11 of which had triple negative breast cancer. One patient had in the 100mg cohort had mutations in both BRCA1 and BRCA2 (Q563X and C1573Y). The objective response rate within the 400mg cohort was 50% (1 complete response, 8 partial response, 7 stable disease, 2 progressive disease), and it was 19% within the 100mg cohort (3 PR, 9 SD, 4 PD). Authors conclude their results provide proof of concept for the utility of treating breast cancer patients harboring germline BRCA1 mutations with olaparib.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 3,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "SUBMITTED",
+          "variantOrigin": "RARE_GERMLINE",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 22,
+            "name": "Breast Cancer",
+            "doid": "1612",
+            "displayName": "Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 42,
+              "name": "Olaparib",
+              "ncitId": "C71721"
+            }
+          ],
+          "source": {
+            "id": 3808,
+            "citationId": "20609467",
+            "sourceType": "PUBMED",
+            "citation": "Tutt et al., 2010",
+            "publicationYear": 2010,
+            "journal": "Lancet",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/20609467"
+          }
+        }
+      ]
+    }
+  }
+}
