@@ -50,22 +50,59 @@ def obtener_esquema_nativo_fallback() -> str:
         labels = ["Paciente", "Tumor", "Tratamiento"]
         rels = ["DIAGNOSTICADO_CON", "TRATADO_CON"]
         
+    # Descripciones completas conocidas de cada etiqueta/relación del grafo.
+    # Se filtran contra las etiquetas/relaciones que realmente existen en la
+    # base para no confundir al LLM con tipos que aún no fueron ingeridos.
+    propiedades_por_label = {
+        "Paciente": "hash (String), edad (Integer), anio_nacimiento (Integer)",
+        "Tumor": "tipo_cancer (String), cie10 (String), descripcion (String)",
+        "Tratamiento": "droga (String)",
+        "Literatura": "id (String), text (String), tipo_cancer (String), categoria (String), drogas (String)",
+        "CasoClinico": "id (String), resumen_clinico (String)",
+        "HallazgoPatologico": "id (String), subtipo_molecular (String), lateralidad (String), procedimiento (String)",
+        "EventoPostOperatorio": "id (String), tipo_evento (String), detalle_resolucion (String), resultado (String)",
+        "AntecedenteMedico": "tipo (String), medicacion (String)",
+        "Variante": "civic_id (Integer), nombre (String), nombre_variante (String), gen (String), link (String), tipos_so (List<String>), perfil_molecular_nombre (String), perfil_molecular_descripcion (String)",
+        "Evidencia": "civic_id (Integer), nombre (String), descripcion (String), tipo (String), direccion (String), nivel (String), rating (String), significancia (String), estado (String), origen (String), interaccion_terapia (String)",
+        "Enfermedad": "civic_id (Integer), nombre (String), nombre_mostrado (String), doid (String)",
+        "Terapia": "civic_id (Integer), nombre (String), ncit_id (String)",
+        "Fuente": "civic_id (Integer), pubmed_id (String), tipo_fuente (String), cita (String), anio (Integer), journal (String), url (String)",
+    }
+
+    relaciones_conocidas = [
+        ("DIAGNOSTICADO_CON", "Paciente", "Tumor"),
+        ("TRATADO_CON", "Tumor", "Tratamiento"),
+        ("CORRESPONDE_A", "Paciente", "CasoClinico"),
+        ("INCLUYE_HALLAZGO", "CasoClinico", "HallazgoPatologico"),
+        ("TUVO_EVENTO_POSTOP", "CasoClinico", "EventoPostOperatorio"),
+        ("TIENE_ANTECEDENTE", "Paciente", "AntecedenteMedico"),
+        ("ASOCIADO_A_TUMOR", "HallazgoPatologico", "Tumor"),
+        ("TIENE_EVIDENCIA", "Variante", "Evidencia"),
+        ("ASOCIADA_A_ENFERMEDAD", "Evidencia", "Enfermedad"),
+        ("INVOLUCRA_TERAPIA", "Evidencia", "Terapia"),
+        ("RESPALDADA_POR", "Evidencia", "Fuente"),
+    ]
+
     schema_str = "Nodos y propiedades en la base de datos de grafos:\n"
-    if "Paciente" in labels or not labels:
-        schema_str += "- Paciente: hash (String), edad (Integer), anio_nacimiento (Integer)\n"
-    if "Tumor" in labels or not labels:
-        schema_str += "- Tumor: tipo_cancer (String), cie10 (String), descripcion (String)\n"
-    if "Tratamiento" in labels or not labels:
-        schema_str += "- Tratamiento: droga (String)\n"
-    if "Literatura" in labels:
-        schema_str += "- Literatura: id (String), text (String), tipo_cancer (String), categoria (String), drogas (String)\n"
-        
+    for label, props in propiedades_por_label.items():
+        if label in labels or not labels:
+            schema_str += f"- {label}: {props}\n"
+
     schema_str += "\nRelaciones y direcciones permitidas en el grafo:\n"
-    if "DIAGNOSTICADO_CON" in rels or not rels:
-        schema_str += "- (:Paciente)-[:DIAGNOSTICADO_CON]->(:Tumor)\n"
-    if "TRATADO_CON" in rels or not rels:
-        schema_str += "- (:Tumor)-[:TRATADO_CON]->(:Tratamiento)\n"
-        
+    for rel, origen, destino in relaciones_conocidas:
+        if rel in rels or not rels:
+            schema_str += f"- (:{origen})-[:{rel}]->(:{destino})\n"
+
+    schema_str += (
+        "\nNota importante: el subgrafo de conocimiento CIViC "
+        "(Variante -> Evidencia -> Enfermedad/Terapia/Fuente) es independiente "
+        "del subgrafo clínico de pacientes (Paciente -> Tumor/CasoClinico); "
+        "no existen relaciones directas entre Tumor/Paciente y Variante/Evidencia. "
+        "Para preguntas sobre evidencia científica, mutaciones o terapias dirigidas, "
+        "consulta el subgrafo CIViC; para preguntas sobre pacientes o historiales, "
+        "consulta el subgrafo clínico.\n"
+    )
+
     return schema_str
 
 def obtener_esquema_grafo() -> str:
@@ -246,8 +283,7 @@ def inicializar_db():
                         ON CREATE SET t.cie10 = $cie10, t.descripcion = $descripcion
                         
                         MERGE (tr:Tratamiento {droga: $droga})
-                        
-                        // EL NUEVO DISEÑO SEMÁNTICO (Paciente -> Tumor -> Tratamiento)
+
                         MERGE (p)-[:DIAGNOSTICADO_CON]->(t)
                         MERGE (t)-[:TRATADO_CON]->(tr)
                     """, {
@@ -313,11 +349,97 @@ def buscar_casos_similares(texto_consulta: str, n_results: int = 2) -> list[str]
     return contextos
 
 
+_STOPWORDS_CIVIC = {
+    "para", "como", "cual", "cuales", "sobre", "cancer", "tipo", "tumor",
+    "paciente", "pacientes", "with", "that", "this", "from", "para", "cuál",
+    "cáncer", "qué", "que", "los", "las", "del", "con", "una", "uno", "por",
+}
+
+
+def _extraer_palabras_clave(texto: str) -> list[str]:
+    """Extrae tokens relevantes (>=4 letras, sin stopwords) de un texto libre."""
+    if not texto:
+        return []
+    crudo = [t.strip(".,;:()¿?¡!").lower() for t in texto.split()]
+    return [t for t in crudo if len(t) >= 4 and t not in _STOPWORDS_CIVIC]
+
+
+def buscar_evidencia_civic(texto_consulta: str, tipo_cancer: str = None, n_results: int = 3) -> list[str]:
+    """
+    Busca evidencia clínico-molecular en el subgrafo de conocimiento CIViC
+    (Variante -> Evidencia -> Enfermedad/Terapia/Fuente) por coincidencia de
+    palabras clave (gen, variante, enfermedad, terapia). No usa embeddings
+    porque los nodos CIViC no tienen índice vectorial propio.
+    """
+    contextos = []
+    g = get_graph()
+
+    palabras = _extraer_palabras_clave(texto_consulta) + _extraer_palabras_clave(tipo_cancer)
+    if not palabras:
+        return contextos
+
+    try:
+        res = g.query("""
+            UNWIND $palabras AS kw
+            MATCH (v:Variante)-[:TIENE_EVIDENCIA]->(e:Evidencia)
+            OPTIONAL MATCH (e)-[:ASOCIADA_A_ENFERMEDAD]->(en:Enfermedad)
+            OPTIONAL MATCH (e)-[:INVOLUCRA_TERAPIA]->(t:Terapia)
+            OPTIONAL MATCH (e)-[:RESPALDADA_POR]->(f:Fuente)
+            WHERE toLower(coalesce(v.gen, '')) CONTAINS kw
+               OR toLower(coalesce(v.nombre_variante, '')) CONTAINS kw
+               OR toLower(coalesce(en.nombre, '')) CONTAINS kw
+               OR toLower(coalesce(en.nombre_mostrado, '')) CONTAINS kw
+               OR toLower(coalesce(t.nombre, '')) CONTAINS kw
+            WITH DISTINCT v, e, en, collect(DISTINCT t.nombre) AS terapias, collect(DISTINCT f.cita) AS fuentes
+            RETURN
+                v.gen AS gen,
+                v.nombre_variante AS variante,
+                e.descripcion AS descripcion,
+                e.nivel AS nivel,
+                e.significancia AS significancia,
+                e.interaccion_terapia AS interaccion,
+                en.nombre_mostrado AS enfermedad,
+                terapias,
+                fuentes
+            LIMIT $n_results
+        """, {"palabras": palabras, "n_results": n_results})
+
+        for record in res:
+            terapias_str = ", ".join([t for t in record.get("terapias", []) if t])
+            fuentes_str = "; ".join([f for f in record.get("fuentes", []) if f][:2])
+
+            contexto = (
+                f"[EVIDENCIA CIViC] Gen {record.get('gen', '?')} "
+                f"variante {record.get('variante', '?')}"
+            )
+            if record.get("enfermedad"):
+                contexto += f" en {record.get('enfermedad')}"
+            contexto += f": {record.get('descripcion', '')}"
+            if record.get("significancia"):
+                contexto += f" | Significancia: {record.get('significancia')}"
+            if record.get("nivel"):
+                contexto += f" | Nivel de evidencia: {record.get('nivel')}"
+            if terapias_str:
+                contexto += f" | Terapia(s) involucrada(s): {terapias_str}"
+            if fuentes_str:
+                contexto += f" | Fuente(s): {fuentes_str}"
+
+            contextos.append(contexto)
+            print(f"[Evidencia CIViC] Coincidencia encontrada: gen={record.get('gen')}")
+
+    except Exception as e:
+        print(f"[Evidencia CIViC] Error en búsqueda por palabras clave: {e}")
+
+    return contextos
+
+
 def buscar_contexto_hibrido(query: str, tipo_cancer: str = None, n_results: int = 3) -> list[str]:
     """
     Realiza una búsqueda híbrida (Graph RAG) utilizando Neo4jGraph de LangChain:
     1. Búsqueda por Similitud de Vectores en el índice de Literatura.
     2. Recorrido de Relaciones en el Grafo Clínico de Pacientes reales.
+    3. Casos clínicos reales similares (búsqueda vectorial de CasoClinico).
+    4. Evidencia clínico-molecular del subgrafo CIViC (Variante/Evidencia/Terapia).
     """
     contextos = []
     g = get_graph()
@@ -375,6 +497,15 @@ def buscar_contexto_hibrido(query: str, tipo_cancer: str = None, n_results: int 
     except Exception as e:
         print(f"Error en búsqueda de casos clínicos similares: {e}")
 
+    # 4. Búsqueda de Evidencia Clínico-Molecular en el subgrafo CIViC
+    try:
+        evidencia_civic = buscar_evidencia_civic(query, tipo_cancer=tipo_cancer, n_results=n_results)
+        if evidencia_civic:
+            contextos.extend(evidencia_civic)
+            print(f"[Híbrida] {len(evidencia_civic)} evidencia(s) CIViC recuperada(s).")
+    except Exception as e:
+        print(f"Error en búsqueda de evidencia CIViC: {e}")
+
     return contextos
 
 def obtener_estado_grafo():
@@ -409,25 +540,3 @@ def obtener_estado_grafo():
     except Exception as e:
         print(f"Error al obtener estado del grafo: {e}")
         return {"error": str(e)}
-
-def ejecutar_cypher_dinamico(query_cypher: str) -> str:
-    """Ejecuta una consulta Cypher y devuelve el resultado formateado (solo lectura)."""
-    try:
-        query_limpia = query_cypher.replace("```cypher", "").replace("```", "").strip()
-        
-        # Filtro de seguridad (solo permitimos leer, no borrar ni escribir)
-        forbidden = ["DELETE", "CREATE", "MERGE", "SET", "REMOVE", "DETACH"]
-        upper_query = query_limpia.upper()
-        for word in forbidden:
-            if word in upper_query:
-                return f"Operación no permitida por seguridad. Se detectó la palabra clave: {word}"
-            
-        g = get_graph()
-        res = g.query(query_limpia)
-        resultados = [str(record) for record in res]
-        if resultados:
-            return "\n".join(resultados)
-        return ""
-    except Exception as e:
-        print(f"Error ejecutando Cypher dinámico: {e}")
-        return ""

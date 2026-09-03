@@ -3,10 +3,23 @@ import hashlib
 import os
 from datetime import datetime
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # -------------------------------------------------------------------------
-# CONFIGURACIÓN DE SEGURIDAD (Edge Instance - Hospital Central)
+# CONFIGURACIÓN DE SEGURIDAD
 # -------------------------------------------------------------------------
-SALT_ROTATIVO_ACTUAL = "Mendoza_Hospital_Central_Secret_2026_Q2"
+# El salt NUNCA debe hardcodearse ni commitearse: si queda fijo en el
+# código fuente, cualquiera con acceso al repo puede recalcular el hash de
+# un ID candidato y re-identificar al paciente. Debe vivir solo en .env.
+SALT_ROTATIVO_ACTUAL = os.getenv("ANONYMIZATION_SALT")
+if not SALT_ROTATIVO_ACTUAL:
+    raise RuntimeError(
+        "ANONYMIZATION_SALT no está definida. Agregala al archivo .env antes de "
+        "correr el pipeline: ANONYMIZATION_SALT=<valor secreto y único por entorno>"
+    )
+
 
 def aplicar_ceguera_tecnica(id_real, salt):
     """Aplica SHA-256 + Salt Rotativo para garantizar la privacidad (Capa Silver)."""

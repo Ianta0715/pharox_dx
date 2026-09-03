@@ -104,6 +104,26 @@ EXAMPLES = [
     {
         "question": "¿Qué edad promedio tienen los pacientes tratados con Pembrolizumab?",
         "query": "MATCH (p:Paciente)-[:DIAGNOSTICADO_CON]->(t:Tumor)-[:TRATADO_CON]->(tr:Tratamiento {{droga: 'Pembrolizumab'}}) RETURN avg(p.edad) AS edad_promedio"
+    },
+    {
+        "question": "¿Qué evidencia clínica existe para la variante V600E del gen BRAF?",
+        "query": "MATCH (v:Variante {{gen: 'BRAF', nombre_variante: 'V600E'}})-[:TIENE_EVIDENCIA]->(e:Evidencia) RETURN e.descripcion AS descripcion, e.nivel AS nivel, e.significancia AS significancia"
+    },
+    {
+        "question": "¿Qué terapias están asociadas a la evidencia de la enfermedad Melanoma?",
+        "query": "MATCH (en:Enfermedad {{nombre_mostrado: 'Melanoma'}})<-[:ASOCIADA_A_ENFERMEDAD]-(e:Evidencia)-[:INVOLUCRA_TERAPIA]->(t:Terapia) RETURN DISTINCT t.nombre AS terapia"
+    },
+    {
+        "question": "¿En qué fuentes (papers) se basa la evidencia sobre el gen EGFR?",
+        "query": "MATCH (v:Variante {{gen: 'EGFR'}})-[:TIENE_EVIDENCIA]->(e:Evidencia)-[:RESPALDADA_POR]->(f:Fuente) RETURN DISTINCT f.cita AS cita, f.journal AS journal, f.anio AS anio"
+    },
+    {
+        "question": "¿Qué hallazgos patológicos se registraron en los casos clínicos de tumores de mama?",
+        "query": "MATCH (c:CasoClinico)-[:INCLUYE_HALLAZGO]->(hp:HallazgoPatologico)-[:ASOCIADO_A_TUMOR]->(t:Tumor {{tipo_cancer: 'Cáncer de Mama'}}) RETURN hp.subtipo_molecular AS subtipo, hp.procedimiento AS procedimiento"
+    },
+    {
+        "question": "¿Qué antecedentes médicos tienen los pacientes registrados?",
+        "query": "MATCH (p:Paciente)-[:TIENE_ANTECEDENTE]->(a:AntecedenteMedico) RETURN p.hash AS paciente, a.tipo AS tipo, a.medicacion AS medicacion"
     }
 ]
 
@@ -121,7 +141,7 @@ Basándote en el esquema de base de datos de grafos provisto, traduce la pregunt
 Reglas estrictas de generación:
 1. Genera ÚNICAMENTE la consulta Cypher sin bloques de código (sin ```cypher), sin explicaciones, sin comentarios y sin texto adicional. Debe ser ejecutable directamente.
 2. Solo se permiten operaciones de lectura (MATCH y RETURN). Está prohibido usar DELETE, CREATE, MERGE, SET, REMOVE o DETACH.
-3. Asegúrate de respetar loscopy nombres de nodos, propiedades y relaciones exactos del esquema.
+3. Asegúrate de respetar los nombres de nodos, propiedades y relaciones exactos del esquema.
 
 Esquema de la base de datos de grafos:
 {schema}
