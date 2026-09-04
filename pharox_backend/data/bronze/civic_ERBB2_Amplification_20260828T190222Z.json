@@ -1,0 +1,1678 @@
+{
+  "id": 306,
+  "name": "Amplification",
+  "link": "/variants/306",
+  "deprecated": false,
+  "variantTypes": [
+    {
+      "id": 123,
+      "name": "Transcript Amplification",
+      "url": "http://www.sequenceontology.org/browser/current_svn/term/SO:0001889"
+    }
+  ],
+  "feature": {
+    "id": 20,
+    "name": "ERBB2",
+    "featureType": "GENE",
+    "description": "ERBB2, commonly referred to as HER2, is amplified and/or overexpressed in 20-30% of invasive breast carcinomas. HER2-positive breast cancer is treated in a separate manner from other subtypes of breast cancer and commonly presents as more aggressive disease. Metastatic HER2-positive breast cancer is now commonly treated with HER2-targeted therapy. Apart from being amplified/overexpressed, ERBB2 activating mutations have been shown to have clinical importance in HER2-negative breast cancer. These mutations have shown sensitivity to the tyrosine kinase inhibitor neratinib, and highlight the importance of clinical sequencing efforts in treating breast cancer.",
+    "featureInstance": {
+      "id": 20,
+      "name": "ERBB2",
+      "entrezId": 2064
+    }
+  },
+  "singleVariantMolecularProfile": {
+    "id": 302,
+    "name": "ERBB2 Amplification",
+    "description": "Her2 (ERBB2) amplifications are seen in up to 20% of breast cancers and were associated with aggressive disease and poor prognosis when discovered. Trastuzumab first found considerable success, and was approved for treatment, in HER2 positive metastatic breast cancer (MBC) which had progressed under chemotherapy. These metastatic cancers nonetheless progressed under trastuzumab, and other forms of therapy were studied for next line treatments, including tyrosine kinase inhibitors. Lapatinib, a reversible inhibitor of tyrosine kinase activity in ErbB1 and ErbB2, and afatinib, an irreversible inhibitor of all 4 ErbB forms were shown to have activity in trastuzumab-progressed HER2 MBC. Interestingly trastuzumab itself also turned out to remain effective in treatment of trastuzumab-progressed HER2 MBC. The LUX-Breast 1 trial compared a TKI-based treatment (afatinib) to a trastuzumab-based treatment of trastuzumab-progressed HER2 MBC, and the LUX-Breast 3 trial addressed TKI application in the context of HER2 MBC with difficult to treat brain metastases. In neither of these cases was the TKI more effective, making successful future replacement of trastuzumab-based therapy with a TKI in trastuzumab-progressed HER2 MBC seem unlikely. Instead, a potential role for TKIs in this disease context is revealed in preclinical work suggesting synergism between TKI and trastuzumab action, and clinical trials with lapatinib or afatinib combined with trastuzumab indicate that dual HER2 blockade may be an effective therapy. Dual antibody HER2 blockade with pertuzumab instead of TKI in HER2 MBC has also recently shown strong results in the CLEOPATRA trial. HER2 overexpression is targeted in neoadjuvant breast cancer treatment, and has also been successfully targeted in gastric cancer.",
+    "molecularProfileScore": 891.0,
+    "evidenceCountsByStatus": {
+      "acceptedCount": 65,
+      "submittedCount": 27,
+      "rejectedCount": 1
+    },
+    "evidenceCountsByType": {
+      "diagnosticCount": 0,
+      "predictiveCount": 89,
+      "predisposingCount": 0,
+      "prognosticCount": 1,
+      "oncogenicCount": 2,
+      "functionalCount": 0
+    },
+    "evidenceItems": {
+      "totalCount": 92,
+      "nodes": [
+        {
+          "id": 7648,
+          "name": "EID7648",
+          "description": "In a phase 1 trial, patients with HER2-positive breast cancer were treated with Trastuzumab Deruxtecan (DS-8201a).\nThe response rate was 59.5% (66/111).",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 4,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "SUBMITTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 22,
+            "name": "Breast Cancer",
+            "doid": "1612",
+            "displayName": "Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 4287,
+              "name": "Trastuzumab Deruxtecan",
+              "ncitId": "C152716"
+            }
+          ],
+          "source": {
+            "id": 3036,
+            "citationId": "31047803",
+            "sourceType": "PUBMED",
+            "citation": "Tamura et al., 2019",
+            "publicationYear": 2019,
+            "journal": "Lancet Oncol",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/31047803"
+          }
+        },
+        {
+          "id": 761,
+          "name": "EID761",
+          "description": "Oral neratinib showed objective response rates of 24 and 56% respectively in prior-trastuzumab (n=63) and trastuzumab-naive (n=64) cohorts in a Phase II trial. As for the primary endpoint, the 16-week progression free survival was 59% in the prior-trastuzumab + neratibin patients and 78% in the trastuzumab-naive + neratinib patients. Overall, neratinib treatment results in substantial clinical activity and is well tolerated by patients.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 3,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 52,
+              "name": "Neratinib",
+              "ncitId": "C49094"
+            }
+          ],
+          "source": {
+            "id": 504,
+            "citationId": "20142587",
+            "sourceType": "PUBMED",
+            "citation": "Burstein et al., 2010",
+            "publicationYear": 2010,
+            "journal": "J Clin Oncol",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/20142587"
+          }
+        },
+        {
+          "id": 1006,
+          "name": "EID1006",
+          "description": "In-vitro studies using ERBB2 over-expressing breast cancer cell lines BT474 and SKBR3 (with ERBB2 amplification) showed apoptosis under either labatinib or trastuzumab treatment.  A marked synergistic apoptotic effect under lapatinib and trastuzumab co-treatment was observed in BT474 cells, and a milder synergistic effect was observed in SKBR3 cells.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "D",
+          "evidenceRating": 3,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": "COMBINATION",
+          "disease": {
+            "id": 22,
+            "name": "Breast Cancer",
+            "doid": "1612",
+            "displayName": "Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 45,
+              "name": "Lapatinib",
+              "ncitId": "C26653"
+            },
+            {
+              "id": 84,
+              "name": "Trastuzumab",
+              "ncitId": "C1647"
+            }
+          ],
+          "source": {
+            "id": 695,
+            "citationId": "16091755",
+            "sourceType": "PUBMED",
+            "citation": "Xia et al., 2005",
+            "publicationYear": 2005,
+            "journal": "Oncogene",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/16091755"
+          }
+        },
+        {
+          "id": 1009,
+          "name": "EID1009",
+          "description": "This Phase III study (EGF104900) was motivated by preclinical and other data demonstrating synergistic activity between lapatinib and trastuzumab against HER2 positive breast cancer (BC) cells.  In this study of HER2 positive metastatic BC which had progressed on trastuzumab, two arms were compared: lapatinib vs. lapatinib + trastuzumab. Progression free survival (PFS) was the primary endpoint. For 296 patients, 148 in each arm, median PFS of 8.1 weeks for lapatinib and 12.0 for combination therapy was observed (P=0.008).  The authors conclude that in the context of metastatic trastuzumab-progressed HER2 positive BC, trastuzumab with lapatinib TKI addition is a favorable treatment.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 4,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": "COMBINATION",
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 45,
+              "name": "Lapatinib",
+              "ncitId": "C26653"
+            },
+            {
+              "id": 84,
+              "name": "Trastuzumab",
+              "ncitId": "C1647"
+            }
+          ],
+          "source": {
+            "id": 698,
+            "citationId": "20124187",
+            "sourceType": "PUBMED",
+            "citation": "Blackwell et al., 2010",
+            "publicationYear": 2010,
+            "journal": "J Clin Oncol",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/20124187"
+          }
+        },
+        {
+          "id": 1613,
+          "name": "EID1613",
+          "description": "In a panel of 31 breast cancer cell lines with varied mutation backgrounds, 10 cell lines harbored HER2 (ERBB2) amplification. Sensitivity to the mTORC1/2 inhibitor PP242 was assessed, and 8/10 HER2 positive cell lines were reported to be sensitive (IC50 < 1 micro molar PP242).  8/21 without HER2 amplification were reported as resistant (IC50 > 1 micro molar PP242). This pattern of HER2 positive cell sensitivity was not reported with the rapamycin analog  mTORC1 inhibitor everolimus.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "D",
+          "evidenceRating": 2,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 22,
+            "name": "Breast Cancer",
+            "doid": "1612",
+            "displayName": "Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 179,
+              "name": "MTOR Kinase Inhibitor PP242",
+              "ncitId": "C128632"
+            }
+          ],
+          "source": {
+            "id": 1066,
+            "citationId": "21358673",
+            "sourceType": "PUBMED",
+            "citation": "Weigelt et al., 2011",
+            "publicationYear": 2011,
+            "journal": "Oncogene",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/21358673"
+          }
+        },
+        {
+          "id": 1561,
+          "name": "EID1561",
+          "description": "In a panel of 47 breast cancer cell lines, HER2 overexpressing cells were among those more sensitive to CDK4/6 inhibitor Palbociclib (PD0332991). In the trastuzumab sensitive cell line Bt474, palbociclib synergized with trastuzumab in growth inhibition, while in 2 trastuzumab resistant cell lines, addition of trastuzumab to palbociclib treatment resulted in increased growth inhibition over palbociclib alone.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "D",
+          "evidenceRating": 2,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": "COMBINATION",
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 84,
+              "name": "Trastuzumab",
+              "ncitId": "C1647"
+            },
+            {
+              "id": 429,
+              "name": "Palbociclib",
+              "ncitId": "C49176"
+            }
+          ],
+          "source": {
+            "id": 1031,
+            "citationId": "19874578",
+            "sourceType": "PUBMED",
+            "citation": "Finn et al., 2009",
+            "publicationYear": 2009,
+            "journal": "Breast Cancer Res",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/19874578"
+          }
+        },
+        {
+          "id": 1077,
+          "name": "EID1077",
+          "description": "CLEOPATRA (NCT00567190) was a Phase III, randomized and double-blind, placebo-controlled study of 808 patients with HER2-positive metastatic breast cancer.  Patients were HER2-positive by IHC3+ or FISH, and patients who had received prior hormonal treatment or adjuvant/neo-adjuvant therapy with or without trastuzumab for longer than 12 months before randomization were also eligible.  The two arms of the study were trastuzumab and docetaxel with either placebo or pertuzumab.  Median PFS in the placebo arm was 12.4 months while in the petuzumab arm 18.5 months was achieved.  Median OS in the control arm was 40.8 months and 56.5 months with pertuzumab.  These strong results make a case for dual antibody blockade in first line treatments of HER2-positive metastatic breast cancer.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 5,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": "COMBINATION",
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 247,
+              "name": "Pertuzumab",
+              "ncitId": "C38692"
+            },
+            {
+              "id": 84,
+              "name": "Trastuzumab",
+              "ncitId": "C1647"
+            },
+            {
+              "id": 73,
+              "name": "Docetaxel",
+              "ncitId": "C1526"
+            }
+          ],
+          "source": {
+            "id": 745,
+            "citationId": "25693012",
+            "sourceType": "PUBMED",
+            "citation": "Swain et al., 2015",
+            "publicationYear": 2015,
+            "journal": "N Engl J Med",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/25693012"
+          }
+        },
+        {
+          "id": 1432,
+          "name": "EID1432",
+          "description": "In a randomized phase II study, first line treatment of HER2-positive metastatic breast cancer with trastuzumab emtansine (T-DM1) resulted in improved progression free survival and fewer serious adverse effects when compared to treatment with combination trastuzumab plus docetaxel (HT) (median follow up 14 months, median PFS with T-DM1 14.2 vs 9.2 with HT).",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 3,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 457,
+              "name": "Trastuzumab Emtansine",
+              "ncitId": "C82492"
+            }
+          ],
+          "source": {
+            "id": 970,
+            "citationId": "23382472",
+            "sourceType": "PUBMED",
+            "citation": "Hurvitz et al., 2013",
+            "publicationYear": 2013,
+            "journal": "J Clin Oncol",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/23382472"
+          }
+        },
+        {
+          "id": 1382,
+          "name": "EID1382",
+          "description": "Treatment of cells obtained from MMTV-NeuT mouse mammary tumors with the p110beta selective inhibitor TGX-221 showed significant but minimal reductions in lipid kinase activity and negligible reductions in phospho Akt levels. In simmilar cells subjected to p110alpha isoform knockout, TGX-221 treatment fully blocked Akt activation, indicating that TGX-221 was fully inhibiting the p110beta isoform. Athymic mice recieved MMTV-NeuT tumor cell transplants and were treated with TGX-221, which resulted in significant but minimal reduction in tumor growth compared to controls.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "DOES_NOT_SUPPORT",
+          "evidenceLevel": "D",
+          "evidenceRating": 3,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 338,
+              "name": "Tgx 221",
+              "ncitId": null
+            }
+          ],
+          "source": {
+            "id": 937,
+            "citationId": "22802530",
+            "sourceType": "PUBMED",
+            "citation": "Utermark et al., 2012",
+            "publicationYear": 2012,
+            "journal": "Genes Dev",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/22802530"
+          }
+        },
+        {
+          "id": 1439,
+          "name": "EID1439",
+          "description": "In a randomized open label phase 3 study (NCT00553358), women with HER2 positive primary breast cancer treated with lapatinib plus trasuzumab had higher rates of pathological complete responses than seen in control groups receiving either IV trastuzumab or oral lapatinib alone (combination treatment pCR rate of 51% vs 29.5% and 24.7% for trastuzumab and lapatinib alone, respectively).",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 4,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": "COMBINATION",
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 45,
+              "name": "Lapatinib",
+              "ncitId": "C26653"
+            },
+            {
+              "id": 84,
+              "name": "Trastuzumab",
+              "ncitId": "C1647"
+            }
+          ],
+          "source": {
+            "id": 972,
+            "citationId": "22257673",
+            "sourceType": "PUBMED",
+            "citation": "Baselga et al., 2012",
+            "publicationYear": 2012,
+            "journal": "Lancet",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/22257673"
+          }
+        },
+        {
+          "id": 887,
+          "name": "EID887",
+          "description": "In this phase 2 trial, treatment-naive, ERBB2-positive (by IHC) breast cancer patients with stage IIIA, B, C or inflammatory disease were randomized 1:1:1 to afatinib (n = 10), lapatinib (n = 8), or trastuzumab (n = 11). The primary end point was objective response rate. Objective response was seen in 8 afatinib-, 6 lapatinib-, and 4 trastuzumab-treated patients. Afatinib demonstrated clinical activity that compared favorably to trastuzumab and lapatinib for neoadjuvant treatment of HER2-positive breast cancer.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 2,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": "SUBSTITUTES",
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 146,
+              "name": "Afatinib",
+              "ncitId": "C66940"
+            },
+            {
+              "id": 45,
+              "name": "Lapatinib",
+              "ncitId": "C26653"
+            },
+            {
+              "id": 84,
+              "name": "Trastuzumab",
+              "ncitId": "C1647"
+            }
+          ],
+          "source": {
+            "id": 597,
+            "citationId": "25537159",
+            "sourceType": "PUBMED",
+            "citation": "Rimawi et al., 2015",
+            "publicationYear": 2015,
+            "journal": "Clin Breast Cancer",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/25537159"
+          }
+        },
+        {
+          "id": 961,
+          "name": "EID961",
+          "description": "A phase II study involving adult female patients, >=18 years, with stage IIIB or IV HER2-positive (by IHC and/or in situ fluorescence) metastatic breast cancer. All patients were previously treated with trastuzumab and a median of three chemotherapy lines. 41 patients received 50 mg afatinib once-daily until disease progression and the primary endpoint was objective response rate. 4 patients (10% of 41 treated; 11% of evaluable patients) had partial response and 15 patients (37% of 41) had stable disease as best response. Thus a total of 19 (46% of 41) achieved clinical benefit. Median progression-free survival was 15.1 weeks.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 3,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 146,
+              "name": "Afatinib",
+              "ncitId": "C66940"
+            }
+          ],
+          "source": {
+            "id": 663,
+            "citationId": "22418700",
+            "sourceType": "PUBMED",
+            "citation": "Lin et al., 2012",
+            "publicationYear": 2012,
+            "journal": "Breast Cancer Res Treat",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/22418700"
+          }
+        },
+        {
+          "id": 1381,
+          "name": "EID1381",
+          "description": "Pharmacologic (A66; p110alpha specific inhibitor) or genetic (cre-mediated knockout) ablation of the p110alpha PI3K isoform reduced tumor growth and tumor formation, respectively, in athymic mice transplanted with cells transduced by MMTV-NeuT (mammary specific overexpression of HER2 that effectively induces tumors). A66 treatment of cells from MMTV-NeuT mouse tumors resulted in decreased lipid kinase activity and phospho Akt levels.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "D",
+          "evidenceRating": 2,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 337,
+              "name": "A66",
+              "ncitId": null
+            }
+          ],
+          "source": {
+            "id": 937,
+            "citationId": "22802530",
+            "sourceType": "PUBMED",
+            "citation": "Utermark et al., 2012",
+            "publicationYear": 2012,
+            "journal": "Genes Dev",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/22802530"
+          }
+        },
+        {
+          "id": 1132,
+          "name": "EID1132",
+          "description": "This Phase III trial took patients with locally advanced or metastatic HER2 (ERBB2) positive breast cancer that had progressed on prior trastuzumab treatment.  Patients were given capecitabine (n=161) or lapatinib plus capecitabine (n=163). The primary endpoint of the study was time to progression. Median time to progression was 4.4 months in the capecitabine group and 8.4 months in capecitabine plus lapatinib group (hazard ratio was 0.49 ; 95% confidence interval, 0.34 to 0.71; P<0.001).  The results indicated that lapatinib may be useful in addressing the problem of trastuzumab progression in HER2 breast cancer.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 4,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": "COMBINATION",
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 45,
+              "name": "Lapatinib",
+              "ncitId": "C26653"
+            },
+            {
+              "id": 32,
+              "name": "Capecitabine",
+              "ncitId": "C1794"
+            }
+          ],
+          "source": {
+            "id": 783,
+            "citationId": "17192538",
+            "sourceType": "PUBMED",
+            "citation": "Geyer et al., 2006",
+            "publicationYear": 2006,
+            "journal": "N Engl J Med",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/17192538"
+          }
+        },
+        {
+          "id": 1437,
+          "name": "EID1437",
+          "description": "In a randomized phase 3 trial, HER2 positive metastatic breast cancer patients given first-line treatment of pertuzumab plus trastuzumb plus docetaxel experienced improved progression free survival (18.5 vs 12.4 months,  P<0.001) and increased objective response rate (80.2% vs 69.3%, P=0.001) than the control group given placebo plus trastuzumab plus docetaxel.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 4,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": "COMBINATION",
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 247,
+              "name": "Pertuzumab",
+              "ncitId": "C38692"
+            },
+            {
+              "id": 84,
+              "name": "Trastuzumab",
+              "ncitId": "C1647"
+            },
+            {
+              "id": 73,
+              "name": "Docetaxel",
+              "ncitId": "C1526"
+            }
+          ],
+          "source": {
+            "id": 971,
+            "citationId": "22149875",
+            "sourceType": "PUBMED",
+            "citation": "Baselga et al., 2012",
+            "publicationYear": 2012,
+            "journal": "N Engl J Med",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/22149875"
+          }
+        },
+        {
+          "id": 528,
+          "name": "EID528",
+          "description": "A randomized clinical trial of 469 patients with previously untreated, HER2-positive, metastatic breast cancer demonstrated improved time to disease progression, objective response rate, and duration of response for patients who received trastuzumab in addition to chemotherapy compared to chemotherapy alone.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 5,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 84,
+              "name": "Trastuzumab",
+              "ncitId": "C1647"
+            }
+          ],
+          "source": {
+            "id": 328,
+            "citationId": "11248153",
+            "sourceType": "PUBMED",
+            "citation": "Slamon et al., 2001",
+            "publicationYear": 2001,
+            "journal": "N Engl J Med",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/11248153"
+          }
+        },
+        {
+          "id": 529,
+          "name": "EID529",
+          "description": "A randomized clinical trial of 186 patients with previously untreated, HER2-positive, metastatic breast cancer demonstrated improved overall survival, response rate, response duration, time to progression, and time to treatment failure for patients who received trastuzumab in addition to chemotherapy (docetaxel) compared to chemotherapy alone.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 5,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 84,
+              "name": "Trastuzumab",
+              "ncitId": "C1647"
+            }
+          ],
+          "source": {
+            "id": 329,
+            "citationId": "15911866",
+            "sourceType": "PUBMED",
+            "citation": "Marty et al., 2005",
+            "publicationYear": 2005,
+            "journal": "J Clin Oncol",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/15911866"
+          }
+        },
+        {
+          "id": 1007,
+          "name": "EID1007",
+          "description": "In light of results showing increased PFS using mAB plus TKI in heavily pretreated patients, the efficacy of trastuzumab plus lapatinib in a neoadjuvant setting with untreated stage II or IIIA HER2 positive breast cancer was assessed.  In this randomized 3 arm phase II study (CHER-LOB), patients received (A) chemotherapy plus trastuzumab, (B) chemotherapy plus lapatinib, or (C) chemotherapy plus trastuzumab and lapatinib, with pathologic complete response (pCR) as endpoint.  From 121 patients, pCR rates were 25% in arm A, 26.3% in arm B, and 46.7% in arm C.  The authors conclude these results support the superiority of dual-HER2 inhibition in the neoadjuvant context of HER2 positive BC.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 4,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": "COMBINATION",
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 45,
+              "name": "Lapatinib",
+              "ncitId": "C26653"
+            },
+            {
+              "id": 84,
+              "name": "Trastuzumab",
+              "ncitId": "C1647"
+            }
+          ],
+          "source": {
+            "id": 696,
+            "citationId": "22493419",
+            "sourceType": "PUBMED",
+            "citation": "Guarneri et al., 2012",
+            "publicationYear": 2012,
+            "journal": "J Clin Oncol",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/22493419"
+          }
+        },
+        {
+          "id": 1133,
+          "name": "EID1133",
+          "description": "In this Phase III trial, trastuzumab-based treatment was assessed in women with locally advanced or metastatic HER2 positive breast cancer who had progressed on trastuzumab.  Patients had 12 weeks or greater previous trastuzumab treatment with time since end of last cycle less than 6 weeks.  Primary endpoint was time to progression.  78 patients were assigned to each group, with median time to progression of 5.6 months in capecitabine group and 8.2 months in trastuzumab plus capecitabine group.  The results are in contrast to the principle of change of treatment on disease progression, and authors suggest that chemotherapy-sensitizing mechanisms of trastuzumab remain intact in HER2 breast cancer cells with trastuzumab progression.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 4,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": "COMBINATION",
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 84,
+              "name": "Trastuzumab",
+              "ncitId": "C1647"
+            },
+            {
+              "id": 32,
+              "name": "Capecitabine",
+              "ncitId": "C1794"
+            }
+          ],
+          "source": {
+            "id": 784,
+            "citationId": "19289619",
+            "sourceType": "PUBMED",
+            "citation": "von Minckwitz et al., 2009",
+            "publicationYear": 2009,
+            "journal": "J Clin Oncol",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/19289619"
+          }
+        },
+        {
+          "id": 1159,
+          "name": "EID1159",
+          "description": "The Phase III trial, TH3RESA (NCT01419197), was performed in patients with advanced HER2 breast cancer that was heavily pretreated.  Patients were required to have prior exposure to trastuzumab and lapatinib as well as a taxane.  This patient population has not seen many studies, responds poorly to late-line treatment with trastuzumab, and in this study was treated with trastuzumab emtansine (T-DM1, n=404) vs. physician's choice (usually trastuzumab plus chemotherapy, n=198).  Results showed progression free survival was 6.2 months in T-DM1 treatment vs. 3.3 months under physician's choice, along with lower incidence of grade 3 or worse events with T-DM1.  The authors conclude that their findings in this heavily pretreated population, along with findings in the EMILIA trial, indicate promise for antibody-drug conjugates.  The NCI-MATCH trial with further study T-DM1 in the context of HER2 amplification.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 4,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 457,
+              "name": "Trastuzumab Emtansine",
+              "ncitId": "C82492"
+            }
+          ],
+          "source": {
+            "id": 798,
+            "citationId": "24793816",
+            "sourceType": "PUBMED",
+            "citation": "Krop et al., 2014",
+            "publicationYear": 2014,
+            "journal": "Lancet Oncol",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/24793816"
+          }
+        },
+        {
+          "id": 1013,
+          "name": "EID1013",
+          "description": "Trastuzumab resistance is thought to consist of multiple compensatory mechanisms involving ErbB family members such as increased signaling through ErbB family heterodimers.  The irreversible TKI afatinib blocks EGFR, HER2, ErbB3 and ErbB4.  Thus afatinib was studied in this Phase I trial of trastuzumab-progressed HER2 positive metastatic BC (MBC) in combination with continued trastuzumab treatment, where trastuzumab is still the perferred treatment for trastuzumab-progressed MBC.  Objective response and disease control rates were 11% and 39%.  The authors conclude that the clinical activity observed in this trial warrants further work with afatinib and trastuzumab combination therapy.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 3,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": "COMBINATION",
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 146,
+              "name": "Afatinib",
+              "ncitId": "C66940"
+            },
+            {
+              "id": 84,
+              "name": "Trastuzumab",
+              "ncitId": "C1647"
+            }
+          ],
+          "source": {
+            "id": 701,
+            "citationId": "25370464",
+            "sourceType": "PUBMED",
+            "citation": "Ring et al., 2015",
+            "publicationYear": 2015,
+            "journal": "Clin Cancer Res",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/25370464"
+          }
+        },
+        {
+          "id": 1011,
+          "name": "EID1011",
+          "description": "This Phase II trial (LUX-Breast 3 - NCT01441596) compared afatinib, afatinib plus vinorelbine, or investigator's choice of treatment.  121 patients with HER2 overexpressing breast cancer with CNS recurrence or regression who had previously progressed on trastuzumab or lapatinib were assigned to 3 arms, with endpoint in the intention-to-treat population being patient benefit at 12 weeks defined as absence of CNS or extra CNS progression, no tumor related worsening of neurological symptoms and no increase in corticosteroid dose. Benefit was seen in 30% of 40 patients assigned to afatinib alone, 34.2% of 38 assigned to afatinib plus vinorelbine, and 41.9% of 43 assigned to investigator's treatment choice.  Differences were not statistically significant, and afatanib patients experienced more adverse effects.  While Afatanib did show response in HER2 breast cancer patients, it was not better than investigator's treatment choice and the investigators state that no further development of afatinib for HER2 breast cancer will be planned.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 3,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 146,
+              "name": "Afatinib",
+              "ncitId": "C66940"
+            }
+          ],
+          "source": {
+            "id": 699,
+            "citationId": "26596672",
+            "sourceType": "PUBMED",
+            "citation": "Cortés et al., 2015",
+            "publicationYear": 2015,
+            "journal": "Lancet Oncol",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/26596672"
+          }
+        },
+        {
+          "id": 1448,
+          "name": "EID1448",
+          "description": "In 5 trastuzumab resistant HER2 overexpressing breast cancer cell lines, combination of the pan-PI3K inhibitor XL147 (pilaralisib) and trastuzumab treatment induced cell death to similar or greater levels than XL147 alone. In three trastuzumab resistant cell lines tested, colony formation in matrigel was markedly inhibited by combination treatment. Apoptotic markers were apparent with combination treatment. In athymic mice, trastuzumab resistant cell line HR6 was used in tumor xenografts and tumors were allowed to form. Mice subsequently treated with trastuzumab or XL147 showed continued tumor growth without marked difference from control, while combination treatment essentially halted tumor growth rate.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "D",
+          "evidenceRating": 4,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": "COMBINATION",
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 84,
+              "name": "Trastuzumab",
+              "ncitId": "C1647"
+            },
+            {
+              "id": 680,
+              "name": "Pilaralisib",
+              "ncitId": "C71705"
+            }
+          ],
+          "source": {
+            "id": 977,
+            "citationId": "23204226",
+            "sourceType": "PUBMED",
+            "citation": "Chakrabarty et al., 2013",
+            "publicationYear": 2013,
+            "journal": "Cancer Res",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/23204226"
+          }
+        },
+        {
+          "id": 8047,
+          "name": "EID8047",
+          "description": "Primarily based on the results from the phase III ExteNET clinical trial (Study 3004, NCT00878709), on July 17, 2017, the FDA approved neratinib (NERLYNX, HKI-272) for extended adjuvant therapy of adult early stage HER2 positive (overexpressed/amplified) Breast Cancer post adjuvant trastuzumab. Over a 2 year period, Neratinib treatment safely and significantly improved invasive disease free survival (iDFS) compared to the placebo group.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "A",
+          "evidenceRating": 4,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "SUBMITTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": "SEQUENTIAL",
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 84,
+              "name": "Trastuzumab",
+              "ncitId": "C1647"
+            },
+            {
+              "id": 52,
+              "name": "Neratinib",
+              "ncitId": "C49094"
+            }
+          ],
+          "source": {
+            "id": 3264,
+            "citationId": "29523624",
+            "sourceType": "PUBMED",
+            "citation": "Singh et al., 2018",
+            "publicationYear": 2018,
+            "journal": "Clin Cancer Res",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/29523624"
+          }
+        },
+        {
+          "id": 8023,
+          "name": "EID8023",
+          "description": "As part of a preclinical study, the efficacy of PI3KA/Di—a selective inhibitor for the α and δ subunits of class I PI3K—was evaluated for several cell lines of breast cancer. Sensitivity and resistance was categorized as less than and more than an IC50 of 1umol/L, respectively, with a maximum tested concentration of 20 umol/L. Six cell lines harbored HER2 Amplification. IC50 values ranged from 0.81uM to 13.68uM. Two cell lines (SK-BR-3 and AU565) was considered sensitive to PI3KA/Di.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "DOES_NOT_SUPPORT",
+          "evidenceLevel": "D",
+          "evidenceRating": 1,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "SUBMITTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 22,
+            "name": "Breast Cancer",
+            "doid": "1612",
+            "displayName": "Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 19832,
+              "name": "PI3Ka/Di",
+              "ncitId": null
+            }
+          ],
+          "source": {
+            "id": 1435,
+            "citationId": "20453058",
+            "sourceType": "PUBMED",
+            "citation": "O'Brien et al., 2010",
+            "publicationYear": 2010,
+            "journal": "Clin Cancer Res",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/20453058"
+          }
+        },
+        {
+          "id": 8048,
+          "name": "EID8048",
+          "description": "A phase III clinical trial (NALA, NCT01808573) with a randomized parallel design of 621 patients evaluated the combination therapy of Neratinib plus capecitabine (N+C) (307 pts.) vs. Lapatinib plus capecitabine (L+C) (314 pts.) as a treatment for adult stage IV HER2 positive metastatic breast cancer patients that had previously received 2 or more HER2-directed regimens. The co-primary end points were progression free survival (PFS) and overall survival (OS). The N+C group demonstrated a 24% reduction in risk of disease progression or death versus the L+C group (Hazard ratio: .76; p=.006). Improvements in 6 / 12 month PFS (47.2 / 28.8% vs. 37.8 / 14.8%) and OS (90.2 / 72.5% vs. 87.5 / 66.7%) were observed in N+C compared to L+C, respectively. N+C also delayed intervention for symptomatic central nervous systems metastases.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "A",
+          "evidenceRating": 4,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "SUBMITTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": "COMBINATION",
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 52,
+              "name": "Neratinib",
+              "ncitId": "C49094"
+            },
+            {
+              "id": 32,
+              "name": "Capecitabine",
+              "ncitId": "C1794"
+            }
+          ],
+          "source": {
+            "id": 3265,
+            "citationId": "170932",
+            "sourceType": "ASCO",
+            "citation": "Cristina Saura, 2019, ASCO Annual Meeting, Abstract 1002",
+            "publicationYear": 2019,
+            "journal": "J Clin Oncol 37, 2019 (suppl; abstr 1002)",
+            "sourceUrl": "https://doi.org/170932"
+          }
+        },
+        {
+          "id": 8050,
+          "name": "EID8050",
+          "description": "A Phase II clinical trial (NCT00741260 ) assessed the safety and efficacy of Neratinib plus capecitabine in the treatment of HER2 positive breast cancer patients. Of the 72 patients in this study, 65 were lapatinib naive and 7 had previously received lapatinib. All 72 patients had completed adjuvant trastuzumab therapy. The primary end point, objective response rate (ORR), was 64% (95% CI 51-76%) in lapatinib naive patients and 57% (95% CI 18-90%) in patients previously receiving lapatinib. Additionally, neratinib plus capecitabine treatment resulted in complete response (CR) in 12% of lapatinib naive patients and 14% of the lapatnib treated patients achieved CR. Median progression free survival (PFS) was 40 weeks in the no lapatinib group and 36 weeks in the prior-lapatinib group. These results were more favorable than a trial of neratinib monotherapy and a trial of lapatinib plus capecitabine. The authors concluded that combination therapy of neratinib and capecitabine was associated with acceptable tolerability and substantial clinical activity. A phase III trial (NALA) was initiated as a result of these findings.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 3,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "SUBMITTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": "COMBINATION",
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 52,
+              "name": "Neratinib",
+              "ncitId": "C49094"
+            },
+            {
+              "id": 32,
+              "name": "Capecitabine",
+              "ncitId": "C1794"
+            }
+          ],
+          "source": {
+            "id": 3267,
+            "citationId": "25287822",
+            "sourceType": "PUBMED",
+            "citation": "Saura et al., 2014",
+            "publicationYear": 2014,
+            "journal": "J Clin Oncol",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/25287822"
+          }
+        },
+        {
+          "id": 8073,
+          "name": "EID8073",
+          "description": "Two HER2 positive breast cancer cells lines were 480-times more sensitive to Neratinib (HKI-272) compared to a HER2 negative breast cancer cell line (MDA-MB-435) as indicated by decreased proliferation. Additionally, overexpressing HER2 in mouse fibroblast 3T3 cells resulted in sensitivity 230-fold below the parental unmodified 3T3 line after Neratinib treatment. Neratinib inhibited tumor growth in mouse xenografts from HER2 positive breast cancer cells (BT474), but had limited impact mouse xenografts from HER2 low breast cancer lines (MCF-7 & MX1). Neratinib irreversibly inhibited HER2 activation as demonstrated by pHER2 reduction and subsequent downstream inhibition of MAPK and AKT phosphorylation and led to cell cycle arrest . Overall, the data indicate neratinib negatively impacts growth through the direct inhibition of the HER2 kinase through irreversible covalent bonding, which subsequently blocks downstream pathway activation.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "D",
+          "evidenceRating": 2,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "SUBMITTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 52,
+              "name": "Neratinib",
+              "ncitId": "C49094"
+            }
+          ],
+          "source": {
+            "id": 3274,
+            "citationId": "15173008",
+            "sourceType": "PUBMED",
+            "citation": "Rabindran et al., 2004",
+            "publicationYear": 2004,
+            "journal": "Cancer Res",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/15173008"
+          }
+        },
+        {
+          "id": 11247,
+          "name": "EID11247",
+          "description": "In a phase III, randomized, open-label trial, 408 women with HER2-positive, locally advanced or metastatic breast cancer that, after treatment with regimens that included an anthracycline, a taxane, and trastuzumab, still had progression were randomly assigned to receive either combination therapy consisting of lapatinib dosed at 1250 mg per day continuously plus capecitabine dosed at 2000 mg per square meter of the body-surface area on days 1 through 14 of a 21-day cycle or monotherapy consisting of capecitabine dosed at 2500 mg per square meter on days 1 through 14 of a 21-day cycle. With the primary endpoint of time to progression, the study found that the hazard ratio for time to progression was 0.49 (95% CI: 0.34 - 0.71; p < 0.001), with 49 events in the combination-therapy group and 72 events in the monotherapy group. The median time to progression was 8.4 months in the combination group as compared with 4.4 months in the monotherapy group, without an increase in toxic effects or cardiac complications.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "A",
+          "evidenceRating": 4,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "SUBMITTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": "COMBINATION",
+          "disease": {
+            "id": 22,
+            "name": "Breast Cancer",
+            "doid": "1612",
+            "displayName": "Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 45,
+              "name": "Lapatinib",
+              "ncitId": "C26653"
+            },
+            {
+              "id": 32,
+              "name": "Capecitabine",
+              "ncitId": "C1794"
+            }
+          ],
+          "source": {
+            "id": 783,
+            "citationId": "17192538",
+            "sourceType": "PUBMED",
+            "citation": "Geyer et al., 2006",
+            "publicationYear": 2006,
+            "journal": "N Engl J Med",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/17192538"
+          }
+        },
+        {
+          "id": 11248,
+          "name": "EID11248",
+          "description": "In a phase III, randomized, double-blind, controlled trial, 219 post-menopausal women with HER2-positive, histologically confirmed stage IIIB/IIIC or IV estrogen receptor-positive and/or progesterone receptor-positive metastatic breast cancer were randomly assigned to daily letrozole 2.5 mg orally plus lapatinib 1,500 mg orally or letrozole 2.5 mg orally and placebo. The study's primary endpoint was progression-free survival (PFS). The study found that the addition of lapatinib significantly reduced the risk of disease progression versus placebo (HR = 0.71; 95% CI: 0.53 - 0.96; p = .019). Further, the median PFS was 8.2 versus 3.0 months, respectively. The clinical benefit, defined as responsive or stable disease for 6 months or greater, was significantly higher for lapatinib versus placebo (48% versus 29%, respectively; OR = 0.4; 95% CI: 0.2 - 0.8; p = .003).",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "A",
+          "evidenceRating": 4,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "SUBMITTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": "COMBINATION",
+          "disease": {
+            "id": 22,
+            "name": "Breast Cancer",
+            "doid": "1612",
+            "displayName": "Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 45,
+              "name": "Lapatinib",
+              "ncitId": "C26653"
+            },
+            {
+              "id": 375,
+              "name": "Letrozole",
+              "ncitId": "C1527"
+            }
+          ],
+          "source": {
+            "id": 4623,
+            "citationId": "19786658",
+            "sourceType": "PUBMED",
+            "citation": "Johnston et al., 2009",
+            "publicationYear": 2009,
+            "journal": "J Clin Oncol",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/19786658"
+          }
+        },
+        {
+          "id": 11250,
+          "name": "EID11250",
+          "description": "In this phase II, randomized, double-blinded, controlled study, 612 patients with HER2-positive metastatic breast cancer previously treated with trastuzumab, pertuzumab, and trastuzumab emtansine. The primary endpoint was progression-free survival (PFS) in the first 480 patients who were randomized. Patients were randomly assigned in a 2:1 ratio to receive either 300 mg oral, twice daily tucatinib or oral, twice daily placebo, with both regimens in combination with 6 mg/kg of body weight, intravenous trastuzumab once every 21 days, with an initial loading dose of 8 mg/kg and 1000 mg per square meter of body-surface area, oral, twice daily capecitabine on days 1 to 14 of each 21-day cycle. The 1 year PFS was 33.1% in the tucatinib-combination group and 12.3% in the placebo-combination group (HR, 0.54; 95% CI: 0.42 - 0.71; p < 0.001), and the median duration of PFS was 7.8 months and 5.6 months, respectively. Overall survival at 2 years was 44.9% in the tucatinib-combination group and 26.6% in the placebo-combination group (HR, 0.66; 95% CI: 0.50 - 0.88; p = 0.005), and the median overall survival was 21.9 months and 17.4 months, respectively.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "A",
+          "evidenceRating": 5,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "SUBMITTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": "COMBINATION",
+          "disease": {
+            "id": 22,
+            "name": "Breast Cancer",
+            "doid": "1612",
+            "displayName": "Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 84,
+              "name": "Trastuzumab",
+              "ncitId": "C1647"
+            },
+            {
+              "id": 14760,
+              "name": "Tucatinib",
+              "ncitId": "C77896"
+            },
+            {
+              "id": 32,
+              "name": "Capecitabine",
+              "ncitId": "C1794"
+            }
+          ],
+          "source": {
+            "id": 4625,
+            "citationId": "31825569",
+            "sourceType": "PUBMED",
+            "citation": "Murthy et al., 2020",
+            "publicationYear": 2020,
+            "journal": "N Engl J Med",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/31825569"
+          }
+        },
+        {
+          "id": 11249,
+          "name": "EID11249",
+          "description": "In this phase III, randomized, open-label trial, 536 patients with HER2-positive breast cancer who have received two or more prior anti-HER2 regimens, with at least one being for metastatic disease. The patients were randomized 1:1 to margetuximab 15 mg/kg or trastuzumab 6 mg/kg (loading dose of 8 mg/kg), each in 3-week cycles. The primary endpoints were progression-free survival (PFS) and overall survival (OS). The study found that margetuximab improved primary PFS over trastuzumab (HR, 0.76; 95% CI: 0.59 - 0.98; p = .03; median, 5.8 [95% CI: 5.5 - 7.0] months versus 4.9 [95% CI: 4.2 - 5.6] months). At the second interim analysis of 270 deaths, the median OS was 21.6 months for margetuximab versus 19.8 months with trastuzumab (HR, 0.89; 95% CI: 0.69 - 1.13; p = .33, and PFS showed relative risk reduction favouring margetuximab (HR, 0.71; 95% CI: 0.58 - 0.86; p < .001; median, 5.7 versus 4.4 months). Margetuximab improved ORR over trastuzumab at both times of analysis on October 10th, 2018, and September 10th, 2019: 22% vs 16% (p = .06;) and 25% vs 14% (p < .001) respectively.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "A",
+          "evidenceRating": 5,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 22,
+            "name": "Breast Cancer",
+            "doid": "1612",
+            "displayName": "Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 18255,
+              "name": "Margetuximab",
+              "ncitId": "C91733"
+            }
+          ],
+          "source": {
+            "id": 4624,
+            "citationId": "33480963",
+            "sourceType": "PUBMED",
+            "citation": "Rugo et al., 2021",
+            "publicationYear": 2021,
+            "journal": "JAMA Oncol",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/33480963"
+          }
+        },
+        {
+          "id": 1122,
+          "name": "EID1122",
+          "description": "HERA was a Phase III trial assessing application of trastuzumab in an extended adjuvant setting.  Patients were HER2 positive with completely excised invasive BC, node positive or negative, and having undergone prior adjuvant or neo-adjuvant chemotherapy.  In the 3 arm study patients were given trastuzumab courses of 1 year, 2 years, or untreated.  At the first planned interim analysis, trastuzumab treatment for one year was compared with observation alone.  A significant difference in disease-free survival was seen with 220 DFS events out of 1693 in the observation arm versus 127 DFS events out of 1694 in the 1 year trastuzumab arm.  1 year adjuvant trastuzumab is currently the standard of care.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "A",
+          "evidenceRating": 4,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 84,
+              "name": "Trastuzumab",
+              "ncitId": "C1647"
+            }
+          ],
+          "source": {
+            "id": 777,
+            "citationId": "16236737",
+            "sourceType": "PUBMED",
+            "citation": "Piccart-Gebhart et al., 2005",
+            "publicationYear": 2005,
+            "journal": "N Engl J Med",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/16236737"
+          }
+        },
+        {
+          "id": 1380,
+          "name": "EID1380",
+          "description": "The HER2/Neu mammary tumor mouse model MMTV-NeuT was employed to demonstrate dependence of HER2 tumor formation on PIK3 p110alpha isoform. MMTV-NeuT mice were crossed with floxed p110alpha mice. Diassacociated tumors cells from these mice were treated with Cre adenovirus to delete p110alpha, or GFP adenovirus, and cells were transplanted into athymic mice. GFP treated cells formed new tumors, while p110alpha deletion blocked tumor formation indicating tumor dependence on PI3KA. Next, MMTV-NeuT tumors were dissociated and treated with pan-PI3K inhibitor GDC-0941. Reduced lipid kinase activity and reduced phospho-Akt levels were seen in these cells. Administration of 125 mg/kg GDC-0941 to athymic mice with transplantation of tumor cells caused marked reduction of tumor cell volume in comparison to control treatment.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "D",
+          "evidenceRating": 3,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 141,
+              "name": "Pictilisib",
+              "ncitId": "C165479"
+            }
+          ],
+          "source": {
+            "id": 937,
+            "citationId": "22802530",
+            "sourceType": "PUBMED",
+            "citation": "Utermark et al., 2012",
+            "publicationYear": 2012,
+            "journal": "Genes Dev",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/22802530"
+          }
+        },
+        {
+          "id": 1764,
+          "name": "EID1764",
+          "description": "In the single arm Phase II study (TDM4258g) breast cancer patients who had progressed on previous anti-HER2 therapy were given transtuzumab emtansine (T-DM1), a HER2 monoclonal antibody and antimicrotubule drug conjugate. 95 trial participants with archival primary tumor were reassessed for HER2 status (positivity defined by FISH or IHC 3+), and 74 patients were confirmed for HER2 positivity and 21 were normal. Overall response rate was 33.8% (95% CI, 23.2% to 44.9%) in patients with confirmed HER2-positive tumors and 4.8% (95% CI, 1.0% to 21.8%) in HER2 normal patients. Median PFS was 8.2 months (95% CI, 4.4 months to not estimable) in patients with confirmed HER2-positive tumors and 2.6 months (95% CI, 1.4 to 3.9 months) in HER2 normal patients.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 4,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 457,
+              "name": "Trastuzumab Emtansine",
+              "ncitId": "C82492"
+            }
+          ],
+          "source": {
+            "id": 1229,
+            "citationId": "21172893",
+            "sourceType": "PUBMED",
+            "citation": "Burris et al., 2011",
+            "publicationYear": 2011,
+            "journal": "J Clin Oncol",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/21172893"
+          }
+        },
+        {
+          "id": 1008,
+          "name": "EID1008",
+          "description": "This Phase III trial compared the activity of lapatinib vs. trastuzumab vs. sequential trastuzumab followed by lapatinib vs. lapatinib plus trastuzumab in an adjuvant treatment setting.  8381 women were randomized to one of four treatment arms. Patients had HER2 positive non-metastatic operable BC. The primary endpoint was disease free survival.  First results report that after median 4.5 year follow up, a non significant 16% improvement in DFS was seen in trastuzumab + lapatinib vs. trastuzumab alone.  The results are interpreted as showing no added benefit for labatinib addition to trastuzumab in the adjuvant treatment context.  This trial is ongoing but not recruiting patients (NCT00490139).",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "DOES_NOT_SUPPORT",
+          "evidenceLevel": "B",
+          "evidenceRating": 4,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": "COMBINATION",
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 84,
+              "name": "Trastuzumab",
+              "ncitId": "C1647"
+            },
+            {
+              "id": 45,
+              "name": "Lapatinib",
+              "ncitId": "C26653"
+            }
+          ],
+          "source": {
+            "id": 697,
+            "citationId": "26255196",
+            "sourceType": "PUBMED",
+            "citation": "Zardavas et al., 2015",
+            "publicationYear": 2015,
+            "journal": "Breast",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/26255196"
+          }
+        },
+        {
+          "id": 1160,
+          "name": "EID1160",
+          "description": "The EMILIA study (NCT00829166) was a Phase II trial to assess the efficacy of trastuzumab emtansine (T-DM1, n=495) in comparison to lapatinib plus capecitabine (n=496), in treatment of advanced HER2 positive breast cancer.  Patients were required to have progressed on or after treatments involving trastuzumab and a taxane, and no prior exposure to lapatinib or T-DM1.   Primary endpoints included independently assessed progression free survival (PFS) and safety. PFS was 9.6 months in T-DM1 group vs. 6.4 months in lapatinib plus capecitabine.  Rates of adverse events of grade 3 or higher were greater with lapatinib plus capecitabine.  These results, together with other trials such as TH3RESA indicate promise for T-DM1 therapy in HER2 amplification, and this will be further studied in an arm of the NCI-MATCH trial.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 4,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 457,
+              "name": "Trastuzumab Emtansine",
+              "ncitId": "C82492"
+            }
+          ],
+          "source": {
+            "id": 799,
+            "citationId": "23020162",
+            "sourceType": "PUBMED",
+            "citation": "Verma et al., 2012",
+            "publicationYear": 2012,
+            "journal": "N Engl J Med",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/23020162"
+          }
+        },
+        {
+          "id": 1012,
+          "name": "EID1012",
+          "description": "LUX-Breast 1 is a phase 3 trial (NCT01125566) which enrolled 508 patients with metastatic HER2 positive BC who had progressed after adjuvant or first-line trastuzumab. It was thought that the wider range of ErbB family blocking and irreversible properties of afatinib could be beneficial in trastuzumab resistant cancer cells, since ErbB family members are thought to play a role in trastuzumab resistance. Primary endpoint was intention-to-treat group PFS. 339 patients were assigned to afatanib + vinorelbine and 169  to trastuzumab + vinorelbine.  Recruitment was stopped prematurely when it was deemed unlikely that the increased PFS would be seen in the afatinib group. Median PFS was 5.5 months in the afatinib group and 5.6 months in the trastuzumab group.  Afatanib plus vinorelbine was less well tolerated than trastuzumab plus vinorelbine, and the authors conclude that trastuzumab remains the best choice for treatment of trastuzumab-progressed HER2 positive metastatic BC.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "DOES_NOT_SUPPORT",
+          "evidenceLevel": "B",
+          "evidenceRating": 4,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 146,
+              "name": "Afatinib",
+              "ncitId": "C66940"
+            }
+          ],
+          "source": {
+            "id": 700,
+            "citationId": "26822398",
+            "sourceType": "PUBMED",
+            "citation": "Harbeck et al., 2016",
+            "publicationYear": 2016,
+            "journal": "Lancet Oncol",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/26822398"
+          }
+        },
+        {
+          "id": 8049,
+          "name": "EID8049",
+          "description": "The initial 2 year follow-up of the Phase III clinical trial (exteNET, NCT00878709) where early stage HER2 positive breast cancer patients underwent adjuvant trastuzumab therapy and then either received Neratinib (NERLYNX, HKI-272) or a placebo for one year, demonstrated Neratinib significantly improved the primary endpoint of invasive disease free survival (iDFS) versus the placebo (stratified hazard ratio (HR): .67, 95% CI .5-.91, p=.0091). This 5 year follow-up showed the Neratinib group maintained significantly fewer iDFS events (116 vs. 163; HR .73, 95% CI .57-.92, p.=.0083) versus the placebo group. The iDFS rates were 90.2% in the Neratinib treated group and 87.7% for the placebo. A reduction in distant and local reoccurrences was observed in the Neratinib group. Neratinib was more effective in the subset of patients that started treatment within 1 year of completing adjuvant trastuzumab compared to those that began over 1 year post trastuzumab. Additionally, Neratinib led to improvement in 5 year iDFS in hormone receptor positive patients whereas iDFS improvements were not maintained after the completion of Neratinib in hormone receptor negative patients. Overall, 1 year of Neratinib therapy after adjuvant trastuzmab improved iDFS in patients without a significant risk of toxicity.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "A",
+          "evidenceRating": 4,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "SUBMITTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": "SEQUENTIAL",
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 84,
+              "name": "Trastuzumab",
+              "ncitId": "C1647"
+            },
+            {
+              "id": 52,
+              "name": "Neratinib",
+              "ncitId": "C49094"
+            }
+          ],
+          "source": {
+            "id": 3266,
+            "citationId": "29146401",
+            "sourceType": "PUBMED",
+            "citation": "Martin et al., 2017",
+            "publicationYear": 2017,
+            "journal": "Lancet Oncol",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/29146401"
+          }
+        },
+        {
+          "id": 8072,
+          "name": "EID8072",
+          "description": "A panel of HER2 positive breast cancer cell lines (n=12) displayed greater sensitivity to Neratinib (HKI-272) compared to triple negative breast cancer cell lines (n=15, p=.0002) and luminal breast cancer cell lines (n=9, p=.0055) based on IC50s generated from cell proliferation assays. As demonstrated by Western blot, Neratinib inhibited the activation of HER2 and downstream pathways in a dose dependent manner in the tested HER2 positive breast cancer cell lines. In the 11 neratinib-sensitive HER2 positive breast cancer cell lines, higher baselines levels of HER2 and pHER2 significantly correlated with increased neratinib response.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "D",
+          "evidenceRating": 3,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "SUBMITTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 52,
+              "name": "Neratinib",
+              "ncitId": "C49094"
+            }
+          ],
+          "source": {
+            "id": 3273,
+            "citationId": "24009064",
+            "sourceType": "PUBMED",
+            "citation": "Canonici et al., 2013",
+            "publicationYear": 2013,
+            "journal": "Oncotarget",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/24009064"
+          }
+        },
+        {
+          "id": 1113,
+          "name": "EID1113",
+          "description": "In this two arm, Phase III study (NCT00878709) of the efficacy of a 12 month course of the TKI neratinib after trastuzumab-based adjuvant therapy of early stage HER2-positive breast cancer was assessed using invasive disease-free survival as primary endpoint. HER2 positivity was assessed via FISH. At 2 year follow-up, 70 vs. 109 disease-free survival events had occurred and disease-free survival rates were 93.9% vs. 91.6% (significant) in neratinib vs. placebo groups respectively. Distant disease-free survival and time to distant recurrence were similar in both groups. These results are an interesting contrast to results of long-term adjuvant therapy with trastuzumab (HERA) which did not show significant benefit.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "A",
+          "evidenceRating": 4,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": "SEQUENTIAL",
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 52,
+              "name": "Neratinib",
+              "ncitId": "C49094"
+            },
+            {
+              "id": 84,
+              "name": "Trastuzumab",
+              "ncitId": "C1647"
+            }
+          ],
+          "source": {
+            "id": 768,
+            "citationId": "26874901",
+            "sourceType": "PUBMED",
+            "citation": "Chan et al., 2016",
+            "publicationYear": 2016,
+            "journal": "Lancet Oncol",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/26874901"
+          }
+        },
+        {
+          "id": 2071,
+          "name": "EID2071",
+          "description": "This preclinical study tested the efficacy of GDC-0941, a selective inhibitor of class I PI3K, on several cell lines of breast cancer. Sensitivity and resistance was categorized as less than and more than an IC50 of 1umol/L, respectively, with a maximum tested concentration of 20 umol/L. Authors tested six HER2 amplified breast cancer cell lines for sensitivity to GDC-0941. Their IC50s ranged from 0.19uM to 1.29uM (5/6 cell lines had IC50s below 1umol/L). Authors further note that HER2 amplified breast cancer cell lines are generally more sensitive to GDC-0941 than basal-type cell lines (p = 0.002).",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "D",
+          "evidenceRating": 3,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 22,
+            "name": "Breast Cancer",
+            "doid": "1612",
+            "displayName": "Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 141,
+              "name": "Pictilisib",
+              "ncitId": "C165479"
+            }
+          ],
+          "source": {
+            "id": 1435,
+            "citationId": "20453058",
+            "sourceType": "PUBMED",
+            "citation": "O'Brien et al., 2010",
+            "publicationYear": 2010,
+            "journal": "Clin Cancer Res",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/20453058"
+          }
+        },
+        {
+          "id": 760,
+          "name": "EID760",
+          "description": "Xenografts established from breast cancer cell lines with ERBB2 amplification and PIK3CA mutation (BT474) or PIK3CA mutation alone (MCF7) were effectively inhibited in-vivo with an AKT1/2-inhibitor (AKTi-1/2; naphthyridinone).",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "D",
+          "evidenceRating": 3,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 22,
+            "name": "Breast Cancer",
+            "doid": "1612",
+            "displayName": "Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 169,
+              "name": "AKTi-1/2",
+              "ncitId": null
+            }
+          ],
+          "source": {
+            "id": 503,
+            "citationId": "18725974",
+            "sourceType": "PUBMED",
+            "citation": "She et al., 2008",
+            "publicationYear": 2008,
+            "journal": "PLoS One",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/18725974"
+          }
+        }
+      ]
+    }
+  }
+}

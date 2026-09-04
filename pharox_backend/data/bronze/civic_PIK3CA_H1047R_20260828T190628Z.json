@@ -1,0 +1,736 @@
+{
+  "id": 107,
+  "name": "H1047R",
+  "link": "/variants/107",
+  "deprecated": false,
+  "variantTypes": [
+    {
+      "id": 47,
+      "name": "Missense Variant",
+      "url": "http://www.sequenceontology.org/browser/current_svn/term/SO:0001583"
+    }
+  ],
+  "feature": {
+    "id": 37,
+    "name": "PIK3CA",
+    "featureType": "GENE",
+    "description": "PIK3CA is the most recurrently mutated gene in breast cancer, and has been found to important in a number of cancer types. An integral part of the PI3K pathway, PIK3CA has long been described as an oncogene, with two main hotspots for activating mutations, the 542/545 region of the helical domain, and the 1047 region of the kinase domain. PIK3CA, and its interaction with the AKT and mTOR pathways, is the subject of an immense amount of research and development, and PI3K inhibition has seen some limited success in recent clinical trials. While monotherapies seem to be limited in their potential, there is a recent interest in pursuing PI3K inhibition as part of a combination therapy regiment with inhibition partners including TKI's, MEK inhibitors, PARP inhibitors, and in breast cancer, aromatase inhibitors.",
+    "featureInstance": {
+      "id": 37,
+      "name": "PIK3CA",
+      "entrezId": 5290
+    }
+  },
+  "singleVariantMolecularProfile": {
+    "id": 107,
+    "name": "PIK3CA H1047R",
+    "description": "PIK3CA H1047R is one of the most recurrent single nucleotide variants in cancer, especially breast cancer. Of PIK3CA-mutant breast cancers, over half harbor this mutation. Meta-analyses have shown that patients harboring this mutation may have worse overall survival, but other studies have shown no difference between H1047R and other PIK3CA mutants from a prognostic standpoint. While very prevalent, targeted therapies for this particular mutation are still in early clinical trial phases.",
+    "molecularProfileScore": 102.5,
+    "evidenceCountsByStatus": {
+      "acceptedCount": 26,
+      "submittedCount": 6,
+      "rejectedCount": 1
+    },
+    "evidenceCountsByType": {
+      "diagnosticCount": 1,
+      "predictiveCount": 29,
+      "predisposingCount": 0,
+      "prognosticCount": 2,
+      "oncogenicCount": 0,
+      "functionalCount": 0
+    },
+    "evidenceItems": {
+      "totalCount": 35,
+      "nodes": [
+        {
+          "id": 314,
+          "name": "EID314",
+          "description": "Breast cancer cell lines with H1047R mutation showed increased sensitivity to CH5132799 than cells with wild-type PIK3CA gene.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "D",
+          "evidenceRating": 4,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 22,
+            "name": "Breast Cancer",
+            "doid": "1612",
+            "displayName": "Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 66,
+              "name": "Izorlisib",
+              "ncitId": "C158603"
+            }
+          ],
+          "source": {
+            "id": 195,
+            "citationId": "21558396",
+            "sourceType": "PUBMED",
+            "citation": "Tanaka et al., 2011",
+            "publicationYear": 2011,
+            "journal": "Clin Cancer Res",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/21558396"
+          }
+        },
+        {
+          "id": 1506,
+          "name": "EID1506",
+          "description": "The HER2 breast cancer cell line KPL4 with PIK3CA H1047R shows sub-optimal responses to trastuzumab and lapatinib, and was used to establish mouse xenografts. Treatment of mice with monotherapy of AZD5363 or lapatinib alone induced growth inhibition (37%, not significant; 65%, P = 0.004), but treatment with AZD5363 and lapatinib together induced significant tumor regression (109%, P < 0.0001) as well as delayed tumor regrowth after removal of therapy.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "D",
+          "evidenceRating": 3,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": "COMBINATION",
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 112,
+              "name": "Capivasertib",
+              "ncitId": "C102564"
+            },
+            {
+              "id": 45,
+              "name": "Lapatinib",
+              "ncitId": "C26653"
+            }
+          ],
+          "source": {
+            "id": 1005,
+            "citationId": "22294718",
+            "sourceType": "PUBMED",
+            "citation": "Davies et al., 2012",
+            "publicationYear": 2012,
+            "journal": "Mol Cancer Ther",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/22294718"
+          }
+        },
+        {
+          "id": 1623,
+          "name": "EID1623",
+          "description": "Case report of a 44-year-old patient with recurrent HER2-positive breast cancer. The primary tumor was HR positive; however, the metastatic tumor was HR negative. The patient was resistant to classical chemotherapeutic agents and anti-HER2 treatment. Thus, the combination of everolimus and fulvestrant was administered. The patient experienced stable disease and PFS of 10 months. Genetic testing of pleural effusion after disease progression revealed a PIK3CA H1047R gene mutation but was positive for PTEN expression (IHC).",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "C",
+          "evidenceRating": 2,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": "COMBINATION",
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 41,
+              "name": "Everolimus",
+              "ncitId": "C48387"
+            },
+            {
+              "id": 54,
+              "name": "Fulvestrant",
+              "ncitId": "C1379"
+            }
+          ],
+          "source": {
+            "id": 1075,
+            "citationId": "27445490",
+            "sourceType": "PUBMED",
+            "citation": "Sun et al., 2016",
+            "publicationYear": 2016,
+            "journal": "Onco Targets Ther",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/27445490"
+          }
+        },
+        {
+          "id": 6206,
+          "name": "EID6206",
+          "description": "This preclinical study tested the sensitivity of HER2-positive breast cancer cell line BT-474 (heterozygous for PIK3CA K111N) retrovirally transduced with PIK3CA H1047R to NVP-BEZ235 (dactolisib; a dual PI3K/mTOR inhibitor). The study found that dactolisib was effective in inhibiting outgrowth of H1047R mutant-containing cells. Dactolisib was also combined with trastuzumab and/or lapatinib with similar abrogation of growth for PIK3CA H1047R expressing cells. Additionally, growth of untransduced BT-474 control cells was prevented by treatment with any monotherapy or combination of trastuzumab, lapatinib, or dactolisib. Authors concluded that PIK3CA H1047R induces resistance to lapatinib and trastuzumab in HER2 positive breast cancer cells, but resistance can be reversed by dactolisib.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "DOES_NOT_SUPPORT",
+          "evidenceLevel": "D",
+          "evidenceRating": 4,
+          "significance": "RESISTANCE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 343,
+              "name": "Dactolisib",
+              "ncitId": "C74072"
+            }
+          ],
+          "source": {
+            "id": 2486,
+            "citationId": "19010894",
+            "sourceType": "PUBMED",
+            "citation": "Eichhorn et al., 2008",
+            "publicationYear": 2008,
+            "journal": "Cancer Res",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/19010894"
+          }
+        },
+        {
+          "id": 6204,
+          "name": "EID6204",
+          "description": "In a preclinical study, efficacy of lapatinib and trastuzumab was evaluated in vitro against HER2 amplified breast cancer cell line BT474 (heterozygous for PIK3CA K111N) retrovirally transduced with PIK3CA H1047R. The study found that H1047R abrogated the growth inhibitory effects of lapatinib and trastuzumab, either in isolation or in combination, though somewhat increased cell death was observed with combination therapy relative to monotherapy. The authors concluded that the PIK3CA H1047R induces resistance to lapatinib and trastuzumab in HER2-positive breast cancer cells.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "D",
+          "evidenceRating": 4,
+          "significance": "RESISTANCE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": "COMBINATION",
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 45,
+              "name": "Lapatinib",
+              "ncitId": "C26653"
+            },
+            {
+              "id": 84,
+              "name": "Trastuzumab",
+              "ncitId": "C1647"
+            }
+          ],
+          "source": {
+            "id": 2486,
+            "citationId": "19010894",
+            "sourceType": "PUBMED",
+            "citation": "Eichhorn et al., 2008",
+            "publicationYear": 2008,
+            "journal": "Cancer Res",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/19010894"
+          }
+        },
+        {
+          "id": 6203,
+          "name": "EID6203",
+          "description": "This preclinical study tested the effect of trastuzumab (an anti-HER2 drug) on HER2-positive breast cancer cell lines (BT474 and SKBR3) retrovirally transduced with H1047R. The study found that the H1047R transduced cells were almost completely resistant to the growth inhibitory effects of trastuzumab compared to wildtype PIK3CA expressing cells. There was no substantial difference in proliferation of H1047R transduced cells treated with trastuzumab relative to wild-type PIK3CA expressing cells in non-treated samples. The authors concluded that PIK3CA H1047R in HER2 receptor positive breast cancer cells is resistant to trastuzumab.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "D",
+          "evidenceRating": 3,
+          "significance": "RESISTANCE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 84,
+              "name": "Trastuzumab",
+              "ncitId": "C1647"
+            }
+          ],
+          "source": {
+            "id": 2486,
+            "citationId": "19010894",
+            "sourceType": "PUBMED",
+            "citation": "Eichhorn et al., 2008",
+            "publicationYear": 2008,
+            "journal": "Cancer Res",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/19010894"
+          }
+        },
+        {
+          "id": 2101,
+          "name": "EID2101",
+          "description": "In unilateral breast cancer patients, PIK3CA mutation was associated with improved local recurrence-free survival.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": null,
+          "significance": "RESISTANCE",
+          "status": "SUBMITTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 22,
+            "name": "Breast Cancer",
+            "doid": "1612",
+            "displayName": "Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 84,
+              "name": "Trastuzumab",
+              "ncitId": "C1647"
+            }
+          ],
+          "source": {
+            "id": 1446,
+            "citationId": "17575221",
+            "sourceType": "PUBMED",
+            "citation": "Pérez-Tenorio et al., 2007",
+            "publicationYear": 2007,
+            "journal": "Clin Cancer Res",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/17575221"
+          }
+        },
+        {
+          "id": 2100,
+          "name": "EID2100",
+          "description": "In Japanese invasive breast cancer patients, PIK3CA mutation was associated with improved relapse-free survival (p < .05).",
+          "evidenceType": "PROGNOSTIC",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 2,
+          "significance": "BETTER_OUTCOME",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 22,
+            "name": "Breast Cancer",
+            "doid": "1612",
+            "displayName": "Breast Cancer"
+          },
+          "therapies": [],
+          "source": {
+            "id": 1445,
+            "citationId": "17202311",
+            "sourceType": "PUBMED",
+            "citation": "Maruyama et al., 2007",
+            "publicationYear": 2007,
+            "journal": "Clin Cancer Res",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/17202311"
+          }
+        },
+        {
+          "id": 8010,
+          "name": "EID8010",
+          "description": "As part of a preclinical study, the efficacy of PI-103 was evaluated for several cell lines of breast cancer. Sensitivity and resistance was categorized as less than and more than an IC50 of 1umol/L, respectively, with a maximum tested concentration of 20 umol/L. Two lines harbored PIK3CA H1047R: MFM-223 is basal-like with an IC50 of 0.71uM; T-47D is luminal-like with an IC50 of 0.64uM.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "D",
+          "evidenceRating": 1,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "SUBMITTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 22,
+            "name": "Breast Cancer",
+            "doid": "1612",
+            "displayName": "Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 19830,
+              "name": "PI-103",
+              "ncitId": null
+            }
+          ],
+          "source": {
+            "id": 1435,
+            "citationId": "20453058",
+            "sourceType": "PUBMED",
+            "citation": "O'Brien et al., 2010",
+            "publicationYear": 2010,
+            "journal": "Clin Cancer Res",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/20453058"
+          }
+        },
+        {
+          "id": 8182,
+          "name": "EID8182",
+          "description": "In a preclinical study, efficacy of trastuzumab and NVP-BEZ235 (dactolisib) combination therapy was evaluated in vitro against HER2 amplified breast cancer cell line BT474 with retrovirally induced PIK3CA H1047R point mutation. Authors found that combination therapy sufficiently inhibited proliferation of PIK3CA + HER2 amplified tumor cells as measured by colony formation assay, though they also found that dactolisib monotherapy was also sufficiently inhibitory.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "D",
+          "evidenceRating": 2,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "SUBMITTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": "COMBINATION",
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 343,
+              "name": "Dactolisib",
+              "ncitId": "C74072"
+            },
+            {
+              "id": 84,
+              "name": "Trastuzumab",
+              "ncitId": "C1647"
+            }
+          ],
+          "source": {
+            "id": 2486,
+            "citationId": "19010894",
+            "sourceType": "PUBMED",
+            "citation": "Eichhorn et al., 2008",
+            "publicationYear": 2008,
+            "journal": "Cancer Res",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/19010894"
+          }
+        },
+        {
+          "id": 2097,
+          "name": "EID2097",
+          "description": "Prognostic significance of PIK3CA mutations was evaluated in a retrospective study of 590 patients with surgically resected invasive breast cancer. Patients whose tumors harbored PIK3CA H1047R (n=88, 14.9%) experienced significantly higher 10-year overall survival rate (76% vs 62%) and lower 10-year probability of breast cancer specific death (11% vs 23%) compared to those with wildtype PIK3CA. They also experienced a 2.8 and 2 fold reduction in probability of death due to breast cancer at 5 and 10 years. Authors found that PIK3CA H1047R was specifically associated with lymph node-negative status: 64% of H1047R patients were lymph-node negative compared to 48% of patients with PIK3CA WT and helical domain mutated tumors (P=0.007). PIK3CA H1047R was positively associated with lymph node negative status, lower nodal stage, lower overall stage, and smaller tumor size compared to WT PIK3CA",
+          "evidenceType": "PROGNOSTIC",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 2,
+          "significance": "BETTER_OUTCOME",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 22,
+            "name": "Breast Cancer",
+            "doid": "1612",
+            "displayName": "Breast Cancer"
+          },
+          "therapies": [],
+          "source": {
+            "id": 1444,
+            "citationId": "19671852",
+            "sourceType": "PUBMED",
+            "citation": "Kalinsky et al., 2009",
+            "publicationYear": 2009,
+            "journal": "Clin Cancer Res",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/19671852"
+          }
+        },
+        {
+          "id": 2102,
+          "name": "EID2102",
+          "description": "This preclinical study tested the efficacy of GDC-0941, a selective inhibitor of class I PI3K, on several cell lines of breast cancer. Sensitivity and resistance was categorized as less than and more than an IC50 of 1umol/L, respectively, with a maximum tested concentration of 20 umol/L. Three cell lines harbored PIK3CA H1047R. T-47D is a luminal type breast cancer cell line, and it had an IC50 of 0.22uM. Treatment with GDC-0941 resulted in a substantial reduction of phosphorylated AKT. BT-20 is a basal breast cancer cell line which had an ICD50 of 0.62uM. MFM-223 is basal cell line that had an ICD50 of 2.10uM, and experienced some reduction in pAKT. Authors note that luminal-like cell lines were generally more sensitive to GDC-0941 than basal-like (p=0.02).",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "D",
+          "evidenceRating": 2,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 22,
+            "name": "Breast Cancer",
+            "doid": "1612",
+            "displayName": "Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 141,
+              "name": "Pictilisib",
+              "ncitId": "C165479"
+            }
+          ],
+          "source": {
+            "id": 1435,
+            "citationId": "20453058",
+            "sourceType": "PUBMED",
+            "citation": "O'Brien et al., 2010",
+            "publicationYear": 2010,
+            "journal": "Clin Cancer Res",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/20453058"
+          }
+        },
+        {
+          "id": 1505,
+          "name": "EID1505",
+          "description": "Tumor xenografts in mice were established with the KPL4 HER2 positive breast cancer cell line with PIK3CA H1047R mutation. KPL4 has suboptimal responses to trastuzumab and lapatinib. Xengraft treatment with trastuzumab and AZD5363 monotherapy induced moderate growth inhibition which was significant for AZD5363, but co-treatment with trastuzumab and AZD5363 induced significant tumor regression and enhanced growth delay upon removal of treatment.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "D",
+          "evidenceRating": 3,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": "COMBINATION",
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 112,
+              "name": "Capivasertib",
+              "ncitId": "C102564"
+            },
+            {
+              "id": 84,
+              "name": "Trastuzumab",
+              "ncitId": "C1647"
+            }
+          ],
+          "source": {
+            "id": 1005,
+            "citationId": "22294718",
+            "sourceType": "PUBMED",
+            "citation": "Davies et al., 2012",
+            "publicationYear": 2012,
+            "journal": "Mol Cancer Ther",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/22294718"
+          }
+        },
+        {
+          "id": 2103,
+          "name": "EID2103",
+          "description": "As part of a pre-clinical experiment, the efficacy of ado-trastuzumab emtansine (T-DM1) was compared to that of trastuzumab against various HER2 positive cell lines. HCC1954 and KPL-4 cell lines expressing PIK3CA H1047R were associated with similar sensitivity to T-DM1 as PIK3CA wild-type cell line SK-BR-3; reduced cell viability was observed at concentrations > 0.01 ug/mL in all three cell lines. Conversely, the cell lines harboring PIK3CA H1047R were resistant to trastuzumab in vitro at all concentrations tested (0-10 ug/mL). Further, treatment with T-DM1 on SCID mice xenografted with KPL-4 (PIK3CA H1047R cells) resulted in inhibition of tumor growth. A single dose of T-DM1 >5mg/kg was sufficient to induce tumor regression >20 days after administration.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "DOES_NOT_SUPPORT",
+          "evidenceLevel": "D",
+          "evidenceRating": 3,
+          "significance": "RESISTANCE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 457,
+              "name": "Trastuzumab Emtansine",
+              "ncitId": "C82492"
+            }
+          ],
+          "source": {
+            "id": 1468,
+            "citationId": "26920887",
+            "sourceType": "PUBMED",
+            "citation": "Baselga et al., 2016",
+            "publicationYear": 2016,
+            "journal": "Clin Cancer Res",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/26920887"
+          }
+        },
+        {
+          "id": 8548,
+          "name": "EID8548",
+          "description": "As part of a pre-clinical experiment, the efficacy of trastuzumab was evaluated against various HER2 positive cell lines. CC1954 and KPL-4 cell lines expressing PIK3CA H1047R were associated with resistance to trastuzumab compared to PIK3CA wild-type cell line SK-BR-3, at all concentrations tested (0-10 ug/mL).",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "D",
+          "evidenceRating": 2,
+          "significance": "RESISTANCE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 84,
+              "name": "Trastuzumab",
+              "ncitId": "C1647"
+            }
+          ],
+          "source": {
+            "id": 1468,
+            "citationId": "26920887",
+            "sourceType": "PUBMED",
+            "citation": "Baselga et al., 2016",
+            "publicationYear": 2016,
+            "journal": "Clin Cancer Res",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/26920887"
+          }
+        },
+        {
+          "id": 2096,
+          "name": "EID2096",
+          "description": "This preclinical study tested the efficacy on several breast cancer cell lines of GDC-0941 (pictilisib), a selective inhibitor of all four isoforms of class I PI3-kinases at a range of IC50 values. Sensitivity and resistance was categorized as less than and more than an IC50 of 1umol/L, respectively, with a maximum tested concentration of 20 umol/L. KPL4 is a HER2 amplified breast cancer cell line harboring PIK3CA H1047R, and it had an IC50 of 0.28uM. To evaluate in vivo efficacy, cells were injected in the mammary fat pad of SCID mice, and allowed to grow. Subsequently, pictilisib was administered orally daily for 14 days. Mice treated with 100mg/kg experienced a 76% tumor reduction, and those treated with 150mg/kg experienced a 90% tumor reduction, with respect to untreated control. Phosphorylated AKT (S473) was substantially reduced with pictilisib administration. Three other HER2 amplified breast cancer cell lines harbored PIK3CA H1047R: UACC-893, HCC1954, MDA-MB-453, which had IC50s of 0.41uM, 0.49uM, and 0.64uM, suggesting that PIK3CA H1047R induces sensitivity to pictilisib in HER2 amplified breast cancer. Authors note that pictilisib was well tolerated in vivo and further note that HER2 amplified cell lines were generally more sensitive, regardless of mutation, to pictilisib than basal-like cell lines (p=0.002).",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "D",
+          "evidenceRating": 4,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 141,
+              "name": "Pictilisib",
+              "ncitId": "C165479"
+            }
+          ],
+          "source": {
+            "id": 1435,
+            "citationId": "20453058",
+            "sourceType": "PUBMED",
+            "citation": "O'Brien et al., 2010",
+            "publicationYear": 2010,
+            "journal": "Clin Cancer Res",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/20453058"
+          }
+        },
+        {
+          "id": 12196,
+          "name": "EID12196",
+          "description": "In a phase 3 trial (NCT04305496) of 708 patients with advanced HR+ HER2- breast cancer, the combination of the AKT inhibitor capivasertib and the estrogen receptor degrader fulvestrant resulted in significantly longer progression-free survival compared to fulvestrant alone. Among the 289 patients (40.8%) with alterations (including PIK3CA, AKT1, or PTEN alterations), the median progression-free survival was 7.3 months in the capivasertib–fulvestrant group compared to 3.1 months in the placebo–fulvestrant group with a hazard ratio of 0.50 (95% CI, 0.38 to 0.65, p<0.001). In the capivasertib–fulvestrant group, 110 patients had PIK3CA mutations, 18 had AKT mutations, 21 had PTEN alterations, 2 had PI3KCA and AKT1 double mutations, and 4 had both PIK3CA and PTEN alterations. A breakdown of response by individual mutation was not provided.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "A",
+          "evidenceRating": 2,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "SUBMITTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": "COMBINATION",
+          "disease": {
+            "id": 369,
+            "name": "HER2 Negative Breast Cancer",
+            "doid": "0060080",
+            "displayName": "HER2 Negative Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 112,
+              "name": "Capivasertib",
+              "ncitId": "C102564"
+            },
+            {
+              "id": 54,
+              "name": "Fulvestrant",
+              "ncitId": "C1379"
+            }
+          ],
+          "source": {
+            "id": 4994,
+            "citationId": "37256976",
+            "sourceType": "PUBMED",
+            "citation": "Turner et al., 2023",
+            "publicationYear": 2023,
+            "journal": "N Engl J Med",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/37256976"
+          }
+        },
+        {
+          "id": 6205,
+          "name": "EID6205",
+          "description": "This preclinical study tested the sensitivity to lapatinib and NVP-BEZ235 (dactolisib; a dual PI3K/mTOR inhibitor) of a HER2-positive breast cancer cell line (BT474) retrovirally transduced with PIK3CA H1047R. The study found that the H1047R transduced cells were resistant to the growth- and proliferation- inhibitory effects of lapatinib (an anti-HER2 drug), but that treatment with dactolisib overcomes PI3K-dependent lapatinib resistance in BT474 cells. Lapatinib and NVP-BEZ235 combination treatment was effective in completely inhibiting outgrowth of H1047R mutant-containing cells, as well as PIK3CA wildtype expressing cells. The growth of PIK3CA H1047R cells was similarly inhibited by dactolisib monotherapy.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "DOES_NOT_SUPPORT",
+          "evidenceLevel": "D",
+          "evidenceRating": 3,
+          "significance": "RESISTANCE",
+          "status": "SUBMITTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": "COMBINATION",
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 45,
+              "name": "Lapatinib",
+              "ncitId": "C26653"
+            },
+            {
+              "id": 343,
+              "name": "Dactolisib",
+              "ncitId": "C74072"
+            }
+          ],
+          "source": {
+            "id": 2486,
+            "citationId": "19010894",
+            "sourceType": "PUBMED",
+            "citation": "Eichhorn et al., 2008",
+            "publicationYear": 2008,
+            "journal": "Cancer Res",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/19010894"
+          }
+        },
+        {
+          "id": 6202,
+          "name": "EID6202",
+          "description": "This preclinical study tested, in vitro, the resistance to lapatinib (an anti-HER2 drug) of HER2-positive breast cancer cell lines (BT474 and SKBR3) retrovirally transduced with H1047R. The study found that the H1047R transduced cells were almost completely resistant to the growth inhibitory effects of lapatinib compared to wildtype expressing cells.There was no substantial difference in proliferation of H1047R transduced cells treated with lapatinib relative to wild-type PIK3CA expressing cells in non-treated samples. Authors concluded that PIK3CA H1047R is resistant to lapatinib.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "D",
+          "evidenceRating": 3,
+          "significance": "RESISTANCE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 368,
+            "name": "HER2 Positive Breast Cancer",
+            "doid": "0060079",
+            "displayName": "HER2 Positive Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 45,
+              "name": "Lapatinib",
+              "ncitId": "C26653"
+            }
+          ],
+          "source": {
+            "id": 2486,
+            "citationId": "19010894",
+            "sourceType": "PUBMED",
+            "citation": "Eichhorn et al., 2008",
+            "publicationYear": 2008,
+            "journal": "Cancer Res",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/19010894"
+          }
+        }
+      ]
+    }
+  }
+}

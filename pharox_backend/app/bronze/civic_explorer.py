@@ -7,6 +7,10 @@ variante molecular (gen + variante), incluyendo su perfil molecular,
 tipos de variante y evidencias clinicas asociadas (terapias, enfermedad,
 nivel de evidencia, fuente bibliografica).
 
+Pharox DX esta enfocado por ahora solo en Cancer de Mama: las evidencias
+clinicas que no correspondan a esa enfermedad se descartan antes de guardar
+el JSON en bronze (ver filtrar_evidencia_por_enfermedad).
+
 Uso:
     python -m app.bronze.civic_explorer BRAF V600E
     python -m app.bronze.civic_explorer            # usa BRAF V600E por defecto
@@ -193,18 +197,61 @@ def resolver_variant_id(gen: str, nombre_variante: str) -> int:
     raise ValueError(f"Variante '{nombre_variante}' no encontrada para el gen '{gen}'.")
 
 
-def obtener_variante_molecular(gen: str, nombre_variante: str, max_evidencias: int = 25) -> dict:
+PALABRA_CLAVE_ENFOCADA = "breast"
+
+
+def filtrar_evidencia_por_enfermedad(variante: dict, palabra_clave: str = PALABRA_CLAVE_ENFOCADA) -> dict:
+    """
+    Descarta del perfil molecular las evidencias clinicas cuya enfermedad asociada
+    no contenga la palabra clave dada (por defecto 'breast'). CIViC expone la
+    evidencia de una variante para TODAS las enfermedades en las que fue estudiada
+    (ej: BRCA1 trae evidencia de mama, ovario, pancreas y prostata en la misma
+    respuesta), y Pharox DX esta enfocado por ahora solo en cancer de mama, asi
+    que este filtro se aplica en el origen para no arrastrar datos de otras
+    enfermedades hacia bronze/gold/Neo4j.
+    """
+    perfil = variante.get("singleVariantMolecularProfile") or {}
+    evidencia_items = perfil.get("evidenceItems") or {}
+    nodos = evidencia_items.get("nodes") or []
+
+    nodos_filtrados = [
+        ev for ev in nodos
+        if ev.get("disease") and palabra_clave.lower() in (
+            (ev["disease"].get("displayName") or "") + " " + (ev["disease"].get("name") or "")
+        ).lower()
+    ]
+
+    print(
+        f"[Filtro Cáncer de Mama] {len(nodos_filtrados)} de {len(nodos)} evidencias descargadas "
+        f"son de cáncer de mama (se descartan {len(nodos) - len(nodos_filtrados)} de otras enfermedades)."
+    )
+
+    evidencia_items["nodes"] = nodos_filtrados
+    perfil["evidenceItems"] = evidencia_items
+    variante["singleVariantMolecularProfile"] = perfil
+    return variante
+
+
+def obtener_variante_molecular(gen: str, nombre_variante: str, max_evidencias: int = 100) -> dict:
     """
     Punto de entrada principal: dado un gen y una variante puntual,
     devuelve el registro completo tal como lo expone la API de CIViC
-    (identidad, tipos SO, gen, perfil molecular y evidencias clinicas).
+    (identidad, tipos SO, gen, perfil molecular y evidencias clinicas),
+    ya filtrado a evidencias de cancer de mama.
+
+    max_evidencias sube a 100 (de las 25 originales) porque el filtro es
+    posterior a la descarga: si una variante tiene muchas evidencias de otras
+    enfermedades antes que las de mama en el orden que devuelve CIViC, con un
+    limite chico se corre el riesgo de descartar evidencia de mama real que
+    quedo fuera de la ventana descargada.
     """
     variant_id = resolver_variant_id(gen, nombre_variante)
     data = consultar_civic(
         QUERY_VARIANTE_COMPLETA,
         {"id": variant_id, "primerasEvidencias": max_evidencias},
     )
-    return data["variant"]
+    variante = data["variant"]
+    return filtrar_evidencia_por_enfermedad(variante)
 
 
 def resumir_variante(variante: dict) -> None:
@@ -221,10 +268,13 @@ def resumir_variante(variante: dict) -> None:
     print("-" * 70)
     print(f"Perfil molecular: {perfil.get('name')} (score={perfil.get('molecularProfileScore')})")
     print(f"Descripcion: {(perfil.get('description') or '')[:300]}...")
-    print(f"Evidencias por estado: {perfil.get('evidenceCountsByStatus')}")
-    print(f"Evidencias por tipo: {perfil.get('evidenceCountsByType')}")
+    print(f"Evidencias por estado (CIViC, todas las enfermedades): {perfil.get('evidenceCountsByStatus')}")
+    print(f"Evidencias por tipo (CIViC, todas las enfermedades): {perfil.get('evidenceCountsByType')}")
     print("-" * 70)
-    print(f"Mostrando {len(evidencias)} de {total_evidencias} evidencias totales:")
+    print(
+        f"Mostrando {len(evidencias)} evidencias de Cáncer de Mama "
+        f"(sobre {total_evidencias} evidencias totales en CIViC para esta variante, ya filtradas):"
+    )
     for ev in evidencias:
         terapias = ", ".join(t["name"] for t in ev.get("therapies", [])) or "-"
         enfermedad = (ev.get("disease") or {}).get("displayName", "-")

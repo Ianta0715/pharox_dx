@@ -49,7 +49,7 @@ Esquema JSON requerido:
   ],
   "hallazgos_patologicos": [
     {{
-      "lateralidad": "derecha" | "izquierda" | "bilateral",
+      "lateralidad": "derecha" | "izquierda" | "bilateral" | "desconocida",
       "tipo_carcinoma": "string",
       "subtipo_molecular": "Luminal_A" | "Luminal_B" | "HER2_positivo" | "Triple_negativo" | "desconocido",
       "grado_nottingham": 1 | 2 | 3 | null,
@@ -77,6 +77,7 @@ Reglas:
 - Si no hay eventos post-operatorios: "eventos_postoperatorios": []
 - Si un campo no está disponible: usa null para números, "desconocido" para strings
 - NUNCA uses "bilateral" si el informe habla de mama derecha y mama izquierda por separado. Crea un elemento en la lista "hallazgos_patologicos" para cada mama.
+- NUNCA inventes ni asumas la lateralidad (derecha/izquierda) si el informe no la especifica explícitamente: en ese caso usa "desconocida". Lo mismo aplica a "subtipo_molecular": si no está explícito en el texto, usa "desconocido" en vez de adivinar.
 - Extrae la EDAD y el SEXO del paciente, no del médico que firma. "femenina" o "mujer" es sexo "F".
 - Solo JSON, sin markdown, sin texto adicional.
 

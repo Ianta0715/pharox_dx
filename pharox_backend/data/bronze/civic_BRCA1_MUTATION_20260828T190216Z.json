@@ -1,0 +1,198 @@
+{
+  "id": 185,
+  "name": "Mutation",
+  "link": "/variants/185",
+  "deprecated": false,
+  "variantTypes": [
+    {
+      "id": 30,
+      "name": "Gene Variant",
+      "url": "http://www.sequenceontology.org/browser/current_svn/term/SO:0001564"
+    },
+    {
+      "id": 161,
+      "name": "Loss Of Function Variant",
+      "url": "http://www.sequenceontology.org/browser/current_svn/term/SO:0002054"
+    }
+  ],
+  "feature": {
+    "id": 6,
+    "name": "BRCA1",
+    "featureType": "GENE",
+    "description": "BRCA1 mutations in the germline have become a hallmark for hereditary breast and ovarian cancers. Variants that have been demonstrated to reduce the function of the protein have been shown to increase the risk for these cancers, as well as prostate and pancreatic cancer. These findings have been the impetus for the increased popularity of genetic testing of healthy individuals to assess risk. Recent studies in ovarian cancer have also demonstrated that BRCA mutation status can predict treatment response. A number of trials assessing BRCA mutation status have shown an improved response to platinum agents, and more recently has led to the FDA-approval of PARP inhibitors for BRCA-positive ovarian cancers. These studies have resulted in the Society of Gynecologic Oncology to recommend germline BRCA testing in all patients with a diagnosis of ovarian cancer.",
+    "featureInstance": {
+      "id": 6,
+      "name": "BRCA1",
+      "entrezId": 672
+    }
+  },
+  "singleVariantMolecularProfile": {
+    "id": 185,
+    "name": "BRCA1 Mutation",
+    "description": null,
+    "molecularProfileScore": 455.0,
+    "evidenceCountsByStatus": {
+      "acceptedCount": 21,
+      "submittedCount": 11,
+      "rejectedCount": 1
+    },
+    "evidenceCountsByType": {
+      "diagnosticCount": 0,
+      "predictiveCount": 30,
+      "predisposingCount": 0,
+      "prognosticCount": 2,
+      "oncogenicCount": 0,
+      "functionalCount": 0
+    },
+    "evidenceItems": {
+      "totalCount": 32,
+      "nodes": [
+        {
+          "id": 1775,
+          "name": "EID1775",
+          "description": "In a study of 26 patients with breast cancer, 10 patients were BRCA-positive and 16 patients were BRCA-negative.  Regardless of BRCA status, none showed objective response when treated with olaparib.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 3,
+          "significance": "RESISTANCE",
+          "status": "ACCEPTED",
+          "variantOrigin": "RARE_GERMLINE",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 370,
+            "name": "Triple-negative Breast Cancer",
+            "doid": "0060081",
+            "displayName": "Triple-negative Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 42,
+              "name": "Olaparib",
+              "ncitId": "C71721"
+            }
+          ],
+          "source": {
+            "id": 1239,
+            "citationId": "21862407",
+            "sourceType": "PUBMED",
+            "citation": "Gelmon et al., 2011",
+            "publicationYear": 2011,
+            "journal": "Lancet Oncol",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/21862407"
+          }
+        },
+        {
+          "id": 1684,
+          "name": "EID1684",
+          "description": "In an evaluation of 77 patients, those who had BRCA1/2 germline mutations (n=11) had an increase response rate to cisplatin when compared to those without germline mutations (54.5% versus 19.7%; P=0.022) although progression free survival and overall survival was not significantly different.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 3,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "RARE_GERMLINE",
+          "therapyInteractionType": "SUBSTITUTES",
+          "disease": {
+            "id": 370,
+            "name": "Triple-negative Breast Cancer",
+            "doid": "0060081",
+            "displayName": "Triple-negative Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 326,
+              "name": "Cisplatin",
+              "ncitId": "C376"
+            },
+            {
+              "id": 93,
+              "name": "Carboplatin",
+              "ncitId": "C1282"
+            }
+          ],
+          "source": {
+            "id": 1137,
+            "citationId": "25847936",
+            "sourceType": "PUBMED",
+            "citation": "Isakoff et al., 2015",
+            "publicationYear": 2015,
+            "journal": "J Clin Oncol",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/25847936"
+          }
+        },
+        {
+          "id": 5830,
+          "name": "EID5830",
+          "description": "Randomized, open-label, phase 3 trial in which olaparib monotherapy was compared with standard therapy in patients with a germline BRCA mutation HER2–negative metastatic breast cancer. 205 patients were assigned to receive olaparib and 97 were assigned to receive standard therapy. Median progression-free survival was significantly longer in the olaparib group than in the standard-therapy group (7.0 months vs. 4.2 months; hazard ratio 0.58; 95%CI 0.43 to 0.80; P<0.001). A response to treatment occurred in 100 of the 167 patients who had measurable disease in the olaparib group (59.9%; 95% CI, 52.0 to 67.4) and in 19 of the 66 patients in the standard-therapy group (28.8%; 95% CI, 18.3 to 41.3). A complete response was seen in 9.0% of the patients who had measurable disease in the olaparib group and in 1.5% in the standard-therapy group.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 4,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "RARE_GERMLINE",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 369,
+            "name": "HER2 Negative Breast Cancer",
+            "doid": "0060080",
+            "displayName": "HER2 Negative Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 42,
+              "name": "Olaparib",
+              "ncitId": "C71721"
+            }
+          ],
+          "source": {
+            "id": 2357,
+            "citationId": "28792849",
+            "sourceType": "PUBMED",
+            "citation": "2017",
+            "publicationYear": 2017,
+            "journal": "N Engl J Med",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/28792849"
+          }
+        },
+        {
+          "id": 9019,
+          "name": "EID9019",
+          "description": "The non-randomized, sequential phase II ICEBERG trial evaluated the efficacy and safety of olaparib monotherapy in 54 patients (2 cohorts of 27 patients, treated with 400mg or 100 mg twice daily) with a germline BRCA1 or BRCA2 mutation and metastatic or locally advanced breast cancer. 34 patients had mutations in only BRCA1, 11 of which had triple negative breast cancer. One patient had in the 100mg cohort had mutations in both BRCA1 and BRCA2 (Q563X and C1573Y). The objective response rate within the 400mg cohort was 50% (1 complete response, 8 partial response, 7 stable disease, 2 progressive disease), and it was 19% within the 100mg cohort (3 PR, 9 SD, 4 PD). Authors conclude their results provide proof of concept for the utility of treating breast cancer patients harboring germline BRCA1 mutations with olaparib.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "B",
+          "evidenceRating": 3,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "SUBMITTED",
+          "variantOrigin": "RARE_GERMLINE",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 22,
+            "name": "Breast Cancer",
+            "doid": "1612",
+            "displayName": "Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 42,
+              "name": "Olaparib",
+              "ncitId": "C71721"
+            }
+          ],
+          "source": {
+            "id": 3808,
+            "citationId": "20609467",
+            "sourceType": "PUBMED",
+            "citation": "Tutt et al., 2010",
+            "publicationYear": 2010,
+            "journal": "Lancet",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/20609467"
+          }
+        }
+      ]
+    }
+  }
+}

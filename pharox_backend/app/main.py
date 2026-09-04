@@ -70,7 +70,7 @@ def log_clinical(msg: str):
 
 class ConsultaMedicaRequest(BaseModel):
     consulta: str
-    tipo_cancer: str = "Cáncer de Pulmón (NSCLC)"
+    tipo_cancer: str = "Cáncer de Mama"
 
 @app.on_event("startup")
 def startup_event():
@@ -90,32 +90,32 @@ def health_check():
 # -------------------------------------------------------------------------
 EXAMPLES = [
     {
-        "question": "¿Cuántos pacientes están diagnosticados con Cáncer de Pulmón (NSCLC)?",
-        "query": "MATCH (p:Paciente)-[:DIAGNOSTICADO_CON]->(t:Tumor {{tipo_cancer: 'Cáncer de Pulmón (NSCLC)'}}) RETURN count(p) AS cantidad"
+        "question": "¿Cuántos pacientes están diagnosticados con Cáncer de Mama?",
+        "query": "MATCH (p:Paciente)-[:DIAGNOSTICADO_CON]->(t:Tumor {{tipo_cancer: 'Cáncer de Mama'}}) RETURN count(p) AS cantidad"
     },
     {
         "question": "¿Qué droga se prescribió para el Tumor de tipo Cáncer de Mama?",
         "query": "MATCH (t:Tumor {{tipo_cancer: 'Cáncer de Mama'}})-[:TRATADO_CON]->(tr:Tratamiento) RETURN DISTINCT tr.droga AS droga"
     },
     {
-        "question": "Drogas usadas en pacientes menores de 50 años diagnosticados con Cáncer de Colon.",
-        "query": "MATCH (p:Paciente)-[:DIAGNOSTICADO_CON]->(t:Tumor {{tipo_cancer: 'Cáncer de Colon'}})-[:TRATADO_CON]->(tr:Tratamiento) WHERE p.edad < 50 RETURN DISTINCT tr.droga AS droga"
+        "question": "Drogas usadas en pacientes menores de 50 años diagnosticados con Cáncer de Mama.",
+        "query": "MATCH (p:Paciente)-[:DIAGNOSTICADO_CON]->(t:Tumor {{tipo_cancer: 'Cáncer de Mama'}})-[:TRATADO_CON]->(tr:Tratamiento) WHERE p.edad < 50 RETURN DISTINCT tr.droga AS droga"
     },
     {
         "question": "¿Qué edad promedio tienen los pacientes tratados con Pembrolizumab?",
         "query": "MATCH (p:Paciente)-[:DIAGNOSTICADO_CON]->(t:Tumor)-[:TRATADO_CON]->(tr:Tratamiento {{droga: 'Pembrolizumab'}}) RETURN avg(p.edad) AS edad_promedio"
     },
     {
-        "question": "¿Qué evidencia clínica existe para la variante V600E del gen BRAF?",
-        "query": "MATCH (v:Variante {{gen: 'BRAF', nombre_variante: 'V600E'}})-[:TIENE_EVIDENCIA]->(e:Evidencia) RETURN e.descripcion AS descripcion, e.nivel AS nivel, e.significancia AS significancia"
+        "question": "¿Qué evidencia clínica existe para la variante H1047R del gen PIK3CA?",
+        "query": "MATCH (v:Variante {{gen: 'PIK3CA', nombre_variante: 'H1047R'}})-[:TIENE_EVIDENCIA]->(e:Evidencia) RETURN e.descripcion AS descripcion, e.nivel AS nivel, e.significancia AS significancia"
     },
     {
-        "question": "¿Qué terapias están asociadas a la evidencia de la enfermedad Melanoma?",
-        "query": "MATCH (en:Enfermedad {{nombre_mostrado: 'Melanoma'}})<-[:ASOCIADA_A_ENFERMEDAD]-(e:Evidencia)-[:INVOLUCRA_TERAPIA]->(t:Terapia) RETURN DISTINCT t.nombre AS terapia"
+        "question": "¿Qué terapias están asociadas a la evidencia de HER2 Positive Breast Cancer?",
+        "query": "MATCH (en:Enfermedad {{nombre_mostrado: 'HER2 Positive Breast Cancer'}})<-[:ASOCIADA_A_ENFERMEDAD]-(e:Evidencia)-[:INVOLUCRA_TERAPIA]->(t:Terapia) RETURN DISTINCT t.nombre AS terapia"
     },
     {
-        "question": "¿En qué fuentes (papers) se basa la evidencia sobre el gen EGFR?",
-        "query": "MATCH (v:Variante {{gen: 'EGFR'}})-[:TIENE_EVIDENCIA]->(e:Evidencia)-[:RESPALDADA_POR]->(f:Fuente) RETURN DISTINCT f.cita AS cita, f.journal AS journal, f.anio AS anio"
+        "question": "¿En qué fuentes (papers) se basa la evidencia sobre el gen ESR1?",
+        "query": "MATCH (v:Variante {{gen: 'ESR1'}})-[:TIENE_EVIDENCIA]->(e:Evidencia)-[:RESPALDADA_POR]->(f:Fuente) RETURN DISTINCT f.cita AS cita, f.journal AS journal, f.anio AS anio"
     },
     {
         "question": "¿Qué hallazgos patológicos se registraron en los casos clínicos de tumores de mama?",
@@ -198,55 +198,70 @@ def validate_cypher(cypher_query: str) -> str:
 
 def ejecutar_y_filtrar_cypher(input_dict: dict) -> dict:
     """
-    Recibe la consulta generada, la valida, la ejecuta y aplica fallback si:
-    - Ocurre algún error sintáctico o de conexión.
-    - La consulta es bloqueada por seguridad.
-    - La consulta no devuelve registros (lista vacía).
+    Recibe la consulta generada, la valida y la ejecuta contra Neo4j.
+    La búsqueda híbrida (Literatura + Grafo Clínico + Casos Reales + CIViC) se ejecuta
+    SIEMPRE como complemento, no solo cuando el Cypher dirigido falla o viene vacío:
+    la razón de usar una base de datos de grafos es combinar todas las fuentes de
+    conocimiento en una sola respuesta, no elegir una sola y descartar el resto.
     """
     cypher_query = input_dict["cypher_query"]
     question = input_dict["question"]
-    tipo_cancer = input_dict.get("tipo_cancer", "Cáncer de Pulmón (NSCLC)")
-    
+    tipo_cancer = input_dict.get("tipo_cancer", "Cáncer de Mama")
+
     log_info("Traducción completada. Cypher generado:")
     print(f"   {TerminalColors.OKBLUE}{cypher_query}{TerminalColors.ENDC}")
-    
+
+    evidencia_cypher = None
     try:
         # 1. Validar contra el filtro de seguridad
         validated_query = validate_cypher(cypher_query)
-        
+
         # 2. Ejecutar en Neo4j a través de la instancia del grafo de LangChain
         g = get_graph()
         records = g.query(validated_query)
-        
-        # 3. Si devuelve registros, los guardamos como evidencia estructurada
+
         if records:
             log_success(f"Consulta ejecutada en Neo4j. Se recuperaron {len(records)} registro(s).")
-            evidencia = json.dumps(records, ensure_ascii=False, indent=2)
-            return {
-                "evidencia": evidencia,
-                "cypher_utilizado": validated_query,
-                "metodo_recuperacion": "Text-to-Cypher (Neo4j Graph)"
-            }
+            evidencia_cypher = json.dumps(records, ensure_ascii=False, indent=2)
         else:
             log_warning("La consulta Cypher no retornó registros en la base de datos.")
-            
+
     except Exception as e:
         log_error(f"Fallo en ejecución o bloqueo de seguridad: {e}")
-        
-    # 4. Fallback: Búsqueda híbrida (vectorial en Literatura + relaciones en Grafo Clínico)
-    log_warning("Activando Fallback: Ejecutando búsqueda híbrida estándar (Vectores + Relaciones)...")
+
+    # 3. Búsqueda híbrida: Literatura (vectorial) + Grafo Clínico (relaciones) +
+    #    Casos Clínicos Reales (vectorial) + Evidencia Molecular CIViC (grafo)
+    log_info("Enriqueciendo con búsqueda híbrida (Literatura + Casos Reales + CIViC)...")
     contextos = buscar_contexto_hibrido(query=question, tipo_cancer=tipo_cancer)
-    evidencia = "\n".join([f"- {c}" for c in contextos]) if contextos else "Sin evidencia local registrada en la base de datos."
-    
+    evidencia_hibrida = "\n".join([f"- {c}" for c in contextos]) if contextos else ""
+
     if contextos:
         log_success(f"Búsqueda híbrida completada. Se recuperaron {len(contextos)} fragmento(s) de evidencia.")
     else:
-        log_warning("No se encontró evidencia relevante tampoco en la búsqueda de fallback.")
-        
+        log_warning("No se encontró evidencia adicional en la búsqueda híbrida.")
+
+    # 4. Combinar ambas fuentes para la síntesis final
+    partes_evidencia = []
+    if evidencia_cypher:
+        partes_evidencia.append(f"[DATOS ESTRUCTURADOS DEL GRAFO]\n{evidencia_cypher}")
+    if evidencia_hibrida:
+        partes_evidencia.append(f"[EVIDENCIA COMPLEMENTARIA: Literatura, Casos Reales y CIViC]\n{evidencia_hibrida}")
+
+    evidencia_final = "\n\n".join(partes_evidencia) if partes_evidencia else "Sin evidencia local registrada en la base de datos."
+
+    if evidencia_cypher and contextos:
+        metodo = "Text-to-Cypher + Búsqueda Híbrida (combinados)"
+    elif evidencia_cypher:
+        metodo = "Text-to-Cypher (Neo4j Graph)"
+    elif contextos:
+        metodo = "Búsqueda Híbrida (Vectorial + Relaciones + CIViC)"
+    else:
+        metodo = "Sin evidencia encontrada"
+
     return {
-        "evidencia": evidencia,
-        "cypher_utilizado": cypher_query, 
-        "metodo_recuperacion": "Fallback (Búsqueda Híbrida: Vectorial + Relaciones)"
+        "evidencia": evidencia_final,
+        "cypher_utilizado": cypher_query,
+        "metodo_recuperacion": metodo
     }
 
 # -------------------------------------------------------------------------
@@ -254,14 +269,25 @@ def ejecutar_y_filtrar_cypher(input_dict: dict) -> dict:
 # -------------------------------------------------------------------------
 prompt_clinico_template = """Actúas como un Copiloto Clínico Experto en Oncología de Precisión.
 Analiza la consulta médica relacionada con el tipo de cáncer: {tipo_cancer}.
-Evidencia recuperada de nuestra base de datos de grafos de Neo4j (incluye literatura científica, estadísticas de grafos y casos clínicos reales similares):
+Evidencia recuperada de nuestra base de datos de grafos de Neo4j (incluye literatura científica, evidencia molecular CIViC y casos clínicos reales similares):
 {evidencia}
 Consulta Médica del Profesional: "{question}"
+
+REGLA ABSOLUTA E INQUEBRANTABLE: Esto es una herramienta clínica real, no un ejercicio de redacción.
+NUNCA inventes, extrapoles ni completes con imaginación pacientes, edades, líneas de tratamiento,
+resultados o complicaciones que no estén literalmente presentes en la evidencia de arriba.
+Si el bloque de evidencia NO contiene ningún fragmento marcado explícitamente como
+"[CASO CLÍNICO REAL SIMILAR]", entonces NO EXISTE ningún caso real similar disponible: no
+inventes uno, no redactes un "paciente de X años" ficticio bajo ningún concepto. En ese caso,
+en la sección de Casos Reales debés escribir textualmente que no hay casos clínicos reales
+similares registrados en la base de datos.
+
 Instrucciones para estructurar tu respuesta:
-1. **Sugerencias Basadas en Casos Reales (CBR):** Si la evidencia contiene fragmentos marcados como "[CASO CLÍNICO REAL SIMILAR]", cita estos casos (mencionando edad, tratamientos aplicados, complicaciones post-operatorias y cómo se resolvieron) como sugerencias empíricas para el médico.
-2. **Recomendaciones de la Literatura Científica:** Utiliza la evidencia de estudios y papers para justificar decisiones farmacológicas o clínicas con base científica.
-3. **Claridad y Rigor:** Responde con rigor oncológico, de forma estructurada, usando viñetas claras y en español.
-4. **Ausencia de Evidencia:** Si la evidencia está vacía o no responde a la pregunta, dilo con honestidad y sugiere estudios complementarios.
+1. **Sugerencias Basadas en Casos Reales (CBR):** Solo si la evidencia contiene fragmentos marcados literalmente como "[CASO CLÍNICO REAL SIMILAR]", cita esos casos (edad, tratamientos aplicados, complicaciones post-operatorias y cómo se resolvieron) tal como aparecen en la evidencia, sin agregar detalles que no estén ahí. Si no hay ninguno, decilo explícitamente.
+2. **Evidencia Molecular (CIViC):** Si la evidencia contiene fragmentos marcados como "[EVIDENCIA CIViC]", citalos indicando el gen/variante, la enfermedad, el nivel de evidencia y la(s) terapia(s) asociada(s) tal como figuran.
+3. **Recomendaciones de la Literatura Científica:** Utiliza la evidencia de estudios y papers para justificar decisiones farmacológicas o clínicas con base científica, citando solo lo que efectivamente está en la evidencia.
+4. **Claridad y Rigor:** Responde con rigor oncológico, de forma estructurada, usando viñetas claras y en español.
+5. **Ausencia de Evidencia:** Si la evidencia está vacía o no responde a la pregunta, dilo con honestidad y sugiere estudios complementarios en vez de inventar contenido.
 """
 
 prompt_clinico = PromptTemplate(

@@ -7,15 +7,14 @@ services:
     volumes:
       - ollama_storage:/root/.ollama
     restart: unless-stopped
-    # Para habilitar aceleración por GPU NVIDIA si posees una en tu sistema,
-    # descomenta las siguientes líneas. Asegúrate de tener instalado NVIDIA Container Toolkit.
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - driver: nvidia
-    #           count: all
-    #           capabilities: [gpu]
+    # Aceleración por GPU NVIDIA (RTX 3080 detectada, NVIDIA Container Toolkit verificado).
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
 
   ollama-pull-model:
     image: curlimages/curl:latest
@@ -26,9 +25,9 @@ services:
       until curl -s http://ollama:11434/api/tags > /dev/null; do
         sleep 2;
       done;
-      echo 'Ollama listo. Verificando/Descargando el modelo qwen2.5:1.5b...';
-      curl -s -X POST http://ollama:11434/api/pull -d '{\"name\": \"qwen2.5:1.5b\"}';
-      echo 'Modelo qwen2.5:1.5b descargado con éxito.';
+      echo 'Ollama listo. Verificando/Descargando el modelo qwen2.5:7b...';
+      curl -s -X POST http://ollama:11434/api/pull -d '{\"name\": \"qwen2.5:7b\"}';
+      echo 'Modelo qwen2.5:7b descargado con éxito.';
       echo 'Verificando/Descargando el modelo de embeddings nomic-embed-text...';
       curl -s -X POST http://ollama:11434/api/pull -d '{\"name\": \"nomic-embed-text\"}';
       echo 'Modelo nomic-embed-text descargado con éxito.';
@@ -56,9 +55,10 @@ services:
       - "8000:8000"
     volumes:
       - ./pharox_backend/data:/app/data
+      - ./pharox_backend/app:/app/app
     environment:
       - OLLAMA_HOST=http://ollama:11434
-      - OLLAMA_MODEL=qwen2.5:1.5b
+      - OLLAMA_MODEL=qwen2.5:7b
       - NEO4J_URI=bolt://neo4j:7687
       - NEO4J_USER=neo4j
       - NEO4J_PASSWORD=pharoxpass

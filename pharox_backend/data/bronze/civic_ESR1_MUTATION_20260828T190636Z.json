@@ -1,0 +1,162 @@
+{
+  "id": 3910,
+  "name": "Mutation",
+  "link": "/variants/3910",
+  "deprecated": false,
+  "variantTypes": [],
+  "feature": {
+    "id": 21,
+    "name": "ESR1",
+    "featureType": "GENE",
+    "description": "ESR1 has been a focus in breast cancer for quite some time, but is also clinically relevant in endometrial, ovarian and other cancer types. The identification of ER-positive breast cancers that are resistant to hormone therapy have inspired clinical sequencing efforts to shed light on the mechanisms of this resistance. A number of mutations in the ligand binding domain of ESR1 have been implicated in hormone resistance and anti-estrogen therapies. These observations have spurred efforts to develop therapeutics that stimulate ESR1 protein degradation (e.g. Fulvestrant), rather than acting as a small molecule antagonist. These agents are currently in clinical trials and have seen some success.",
+    "featureInstance": {
+      "id": 21,
+      "name": "ESR1",
+      "entrezId": 2099
+    }
+  },
+  "singleVariantMolecularProfile": {
+    "id": 3778,
+    "name": "ESR1 Mutation",
+    "description": null,
+    "molecularProfileScore": 30.0,
+    "evidenceCountsByStatus": {
+      "acceptedCount": 1,
+      "submittedCount": 2,
+      "rejectedCount": 0
+    },
+    "evidenceCountsByType": {
+      "diagnosticCount": 0,
+      "predictiveCount": 3,
+      "predisposingCount": 0,
+      "prognosticCount": 0,
+      "oncogenicCount": 0,
+      "functionalCount": 0
+    },
+    "evidenceItems": {
+      "totalCount": 3,
+      "nodes": [
+        {
+          "id": 11443,
+          "name": "EID11443",
+          "description": "In a phase 3 trial (NCT03778931), the selective ER-degrader elacestrant was shown to increase progression free survival (PFS) in both ESR1 mutant and ESR1 wild type, ER-positive, HER2-negative breast cancer patients, previously treated with endocrine and CDK4/6  inhibitor therapy. Of 477 patients, 239 received elacestrant and 238 received SOC (fulvestrant or aromatase inhibitors) with almost half of all patients (228 of 477) having ESR1 mutations.  Elacestrant significantly reduced the risk of  progression or death compared with SOC  by 30% in the overall cohort and by 45% in patients with ESR1 mutation.  This led to the FDA-approval of elacestrant in 2023.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "A",
+          "evidenceRating": 4,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "ACCEPTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": null,
+          "disease": {
+            "id": 22,
+            "name": "Breast Cancer",
+            "doid": "1612",
+            "displayName": "Breast Cancer"
+          },
+          "therapies": [
+            {
+              "id": 1891,
+              "name": "Elacestrant",
+              "ncitId": "C120211"
+            }
+          ],
+          "source": {
+            "id": 4727,
+            "citationId": "35584336",
+            "sourceType": "PUBMED",
+            "citation": "Bidard et al., 2022",
+            "publicationYear": 2022,
+            "journal": "J Clin Oncol",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/35584336"
+          }
+        },
+        {
+          "id": 12599,
+          "name": "EID12599",
+          "description": "In the concurrently randomized cohort of the same phase 3 trial in ER-positive, HER2-negative breast carcinoma (NCT04975308; n = 426, 213 per arm), imlunestrant plus abemaciclib improved investigator-assessed PFS vs imlunestrant alone regardless of ESR1-mutation status (median 9.4 mo (95% CI, 7.5 -11.9) vs 5.5 mo (95% CI, 3.8 - 5.6); HR 0.57, 95% CI 0.44 - 0.73; P < 0.001); interim OS was immature (15% of the patients died) and not significant (HR 1.34, 95% CI 0.81 - 2.21; P = 0.25), and grade ≥3 AEs occurred in 48.6% with the combination with key events including neutropenia 19.7%, diarrhea 8.2%, anemia 7.7%.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "A",
+          "evidenceRating": 4,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "SUBMITTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": "COMBINATION",
+          "disease": {
+            "id": 140,
+            "name": "Breast Carcinoma",
+            "doid": "3459",
+            "displayName": "Breast Carcinoma"
+          },
+          "therapies": [
+            {
+              "id": 31548,
+              "name": "Imlunestrant Regimen",
+              "ncitId": "C222429"
+            },
+            {
+              "id": 5689,
+              "name": "Abemaciclib Regimen",
+              "ncitId": "C159980"
+            }
+          ],
+          "source": {
+            "id": 5407,
+            "citationId": "39660834",
+            "sourceType": "PUBMED",
+            "citation": "Jhaveri et al., 2025",
+            "publicationYear": 2025,
+            "journal": "N Engl J Med",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/39660834"
+          }
+        },
+        {
+          "id": 12600,
+          "name": "EID12600",
+          "description": "In a randomized, open-label phase 3 trial in ER-positive, HER2-negative breast carcinoma (EMBER-3, NCT04975308; n = 874; ESR1-mut subgroup n = 256), imlunestrant monotherapy (n=331) improved investigator-assessed PFS vs standard endocrine therapy (n = 330) in ESR1-mutated disease (median 5.5 vs 3.8 mo; restricted mean\nsurvival time diff 2.6 mo, 95% CI 1.2 - 3.9; p < 0.001), while the overall-population PFS comparison was not significant (HR 0.87, 95% CI 0.72 - 1.04; P = 0.12); interim OS HR in ESR1-mut was 0.55 (95% CI 0.35 - 0.86; p = 0.008) but did not meet multiplicity threshold, and grade ≥3 AEs occurred in 17.1% vs 20.7%.",
+          "evidenceType": "PREDICTIVE",
+          "evidenceDirection": "SUPPORTS",
+          "evidenceLevel": "A",
+          "evidenceRating": 4,
+          "significance": "SENSITIVITYRESPONSE",
+          "status": "SUBMITTED",
+          "variantOrigin": "SOMATIC",
+          "therapyInteractionType": "SUBSTITUTES",
+          "disease": {
+            "id": 140,
+            "name": "Breast Carcinoma",
+            "doid": "3459",
+            "displayName": "Breast Carcinoma"
+          },
+          "therapies": [
+            {
+              "id": 31548,
+              "name": "Imlunestrant Regimen",
+              "ncitId": "C222429"
+            },
+            {
+              "id": 54,
+              "name": "Fulvestrant",
+              "ncitId": "C1379"
+            },
+            {
+              "id": 407,
+              "name": "Aromatase Inhibitor",
+              "ncitId": "C1740"
+            }
+          ],
+          "source": {
+            "id": 5407,
+            "citationId": "39660834",
+            "sourceType": "PUBMED",
+            "citation": "Jhaveri et al., 2025",
+            "publicationYear": 2025,
+            "journal": "N Engl J Med",
+            "sourceUrl": "http://www.ncbi.nlm.nih.gov/pubmed/39660834"
+          }
+        }
+      ]
+    }
+  }
+}
