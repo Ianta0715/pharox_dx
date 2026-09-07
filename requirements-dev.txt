@@ -1,0 +1,8 @@
+# Pin exacto de las dependencias de desarrollo (además de requirements.txt).
+# Generado igual que requirements.txt, dentro de python:3.10-slim.
+-r requirements.txt
+pytest==9.1.1
+iniconfig==2.3.0
+pluggy==1.6.0
+Pygments==2.21.0
+tomli==2.4.1

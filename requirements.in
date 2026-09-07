@@ -1,0 +1,20 @@
+# Dependencias directas del proyecto, con rangos amplios (lo que queremos).
+# requirements.txt es el pin exacto generado a partir de este archivo — ver
+# el encabezado de requirements.txt para cómo regenerarlo. Editar acá,
+# nunca a mano en requirements.txt.
+fastapi>=0.110.0
+uvicorn[standard]>=0.28.0
+neo4j>=5.18.0
+httpx>=0.27.0
+pydantic>=2.7.4
+requests>=2.31.0
+python-dotenv>=1.0.1
+numpy>=1.26.4
+langchain>=0.3.0
+langchain-core>=0.3.0
+langchain-community>=0.3.0
+langchain-neo4j>=0.1.1
+langchain-ollama>=0.2.0
+pytesseract>=0.3.10
+Pillow>=10.0.0
+python-multipart>=0.0.9

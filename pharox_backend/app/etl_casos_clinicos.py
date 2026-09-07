@@ -16,6 +16,9 @@ import re
 from typing import Optional
 
 from app.ai_gateway import get_llm, generar_embedding
+from app.logging_config import get_logger
+
+logger = get_logger("pharox.etl_casos_clinicos")
 
 # ---------------------------------------------------------------------------
 # OCR — se importa condicionalmente para no romper si no está instalado
@@ -27,7 +30,7 @@ try:
     OCR_AVAILABLE = True
 except ImportError:
     OCR_AVAILABLE = False
-    print("[ETL] ADVERTENCIA: pytesseract/Pillow no instalados. Solo se aceptará texto.")
+    logger.warning("[ETL] pytesseract/Pillow no instalados. Solo se aceptará texto.")
 
 # ---------------------------------------------------------------------------
 # PROMPT DE EXTRACCIÓN ESTRUCTURADA
@@ -148,7 +151,7 @@ def imagen_a_texto(image_bytes: bytes) -> str:
         texto = texto.strip()
         if not texto:
             raise ValueError("El OCR no pudo extraer texto de la imagen.")
-        print(f"[OCR] Texto extraído ({len(texto)} caracteres).")
+        logger.info(f"[OCR] Texto extraído ({len(texto)} caracteres).")
         return texto
     except Exception as e:
         raise RuntimeError(f"Error en OCR: {e}")
@@ -165,7 +168,7 @@ def extraer_estructura_con_llm(texto: str) -> dict:
     llm = get_llm(temperature=0.0)
     prompt_final = EXTRACTION_PROMPT.format(texto=texto)
 
-    print("[ETL] Extrayendo estructura del informe con LLM...")
+    logger.info("[ETL] Extrayendo estructura del informe con LLM...")
     try:
         respuesta = llm.invoke(prompt_final)
         contenido = respuesta.content if hasattr(respuesta, "content") else str(respuesta)
@@ -181,11 +184,11 @@ def extraer_estructura_con_llm(texto: str) -> dict:
             contenido = match.group(0)
 
         caso = json.loads(contenido)
-        print("[ETL] Estructura extraída correctamente.")
+        logger.info("[ETL] Estructura extraída correctamente.")
         return caso
     except json.JSONDecodeError as e:
-        print(f"[ETL] Error al parsear JSON del LLM: {e}")
-        print(f"[ETL] Respuesta recibida: {contenido[:500]}")
+        logger.error(f"[ETL] Error al parsear JSON del LLM: {e}")
+        logger.info(f"[ETL] Respuesta recibida: {contenido[:500]}")
         raise ValueError(f"El LLM no generó un JSON válido: {e}")
 
 
@@ -279,7 +282,7 @@ def ingestar_caso_en_neo4j(caso: dict, caso_id: str, resumen: str, embedding: li
     sexo = demo.get("sexo", "desconocido")
     imc = demo.get("imc_categoria", "desconocido")
 
-    print(f"[ETL] Ingesta de caso {caso_id} en Neo4j...")
+    logger.info(f"[ETL] Ingesta de caso {caso_id} en Neo4j...")
 
     with driver.session() as session:
         # 1. Crear nodo Paciente anónimo (si no existe)
@@ -390,7 +393,7 @@ def ingestar_caso_en_neo4j(caso: dict, caso_id: str, resumen: str, embedding: li
                 "caso_id": caso_id
             })
 
-    print(f"[ETL] Caso {caso_id} ingesta completada en Neo4j.")
+    logger.info(f"[ETL] Caso {caso_id} ingesta completada en Neo4j.")
     return {"caso_id": caso_id, "nodos_creados": True}
 
 
@@ -409,7 +412,7 @@ def procesar_informe(texto: Optional[str] = None, image_bytes: Optional[bytes] =
 
     # Paso 1: OCR si es imagen
     if image_bytes:
-        print("[ETL] Procesando imagen con OCR...")
+        logger.info("[ETL] Procesando imagen con OCR...")
         texto_ocr = imagen_a_texto(image_bytes)
         # Combinar con texto adicional si el médico también aportó descripción
         texto_final = f"{texto_ocr}\n\n{texto}" if texto else texto_ocr
@@ -426,7 +429,7 @@ def procesar_informe(texto: Optional[str] = None, image_bytes: Optional[bytes] =
     resumen = generar_resumen_clinico(caso_estructurado)
 
     # Paso 5: Generar embedding vectorial
-    print("[ETL] Generando embedding vectorial del caso...")
+    logger.info("[ETL] Generando embedding vectorial del caso...")
     embedding = generar_embedding(resumen)
 
     # Paso 6: Ingestar en Neo4j

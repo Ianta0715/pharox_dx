@@ -54,15 +54,24 @@ Motor de consultas (`app/main.py`, orquestado con LangChain LCEL):
 
 ```bash
 cp .env.example .env
-# completar CIVIC_API_KEY y ANONYMIZATION_SALT en .env
+# completar CIVIC_API_KEY, ANONYMIZATION_SALT y PHAROX_API_KEY en .env
+# (los dos últimos podés generarlos con: python -c "import secrets; print(secrets.token_urlsafe(32))")
 
 docker compose up -d --build
 ```
 
 Esto levanta Neo4j (`localhost:7474` browser / `bolt://localhost:7687`), Ollama (descarga
-automáticamente `qwen2.5:1.5b` y `nomic-embed-text`) y el backend FastAPI en `localhost:8000`.
+automáticamente `qwen3:8b` y `nomic-embed-text`) y el backend FastAPI en `localhost:8000`.
 
 Ver variables de entorno documentadas en [.env.example](.env.example).
+
+### Dependencias
+
+`requirements.txt` tiene versiones exactas (pin reproducible) — no editar a mano. Para agregar
+o actualizar una dependencia: editar [requirements.in](requirements.in) (rangos amplios) y
+regenerar el pin con el comando documentado en el encabezado de `requirements.txt` (usa
+`python:3.10-slim`, la misma base que el `Dockerfile`, para que las versiones resueltas sean
+las que realmente corren en producción).
 
 ### Cargar conocimiento CIViC (opcional, fuera de Docker)
 
@@ -73,15 +82,50 @@ python -m app.gold.civic_to_neo4j
 
 ## Endpoints principales
 
+Todos los endpoints salvo `/` requieren el header `X-API-Key` con el valor de `PHAROX_API_KEY`.
+
 | Endpoint | Método | Descripción |
 |---|---|---|
+| `/` | GET | Health check público (sin auth), para probes de infraestructura |
 | `/api/v1/consultar` | POST | Consulta clínica en lenguaje natural (motor Graph RAG completo) |
 | `/api/v1/casos/ingestar` | POST | Ingesta un caso clínico real (texto y/o imagen de informe) |
 | `/api/v1/casos/ingestar_texto` | POST | Ingesta un caso clínico real (solo texto) |
 | `/api/v1/casos/buscar` | GET | Busca casos clínicos reales similares por texto |
 | `/api/v1/debug/graph_db` | GET | Estado del grafo (conteos de nodos/relaciones) |
 
-Documentación interactiva (Swagger) en `http://localhost:8000/docs`.
+```bash
+curl -H "X-API-Key: $PHAROX_API_KEY" http://localhost:8000/api/v1/debug/graph_db
+```
+
+Documentación interactiva (Swagger) en `http://localhost:8000/docs`. El origen del frontend que
+va a llamar a la API debe agregarse a `CORS_ORIGINS` en `.env`.
+
+## Tests
+
+Los tests cubren solo funciones puras (normalización, filtro de seguridad Cypher,
+anonimización) — no requieren Neo4j, Ollama ni GPU levantados.
+
+```bash
+pip install -r requirements-dev.txt
+cd pharox_backend
+pytest -v
+```
+
+Corren automáticamente en cada push/PR a `main` vía GitHub Actions
+([.github/workflows/ci.yml](.github/workflows/ci.yml)), junto con un build de
+la imagen Docker para detectar roturas del `Dockerfile`.
+
+## Logging
+
+`app/logging_config.py` controla el formato de los logs:
+
+- `LOG_FORMAT=text` (default) — coloreado, para leer en una terminal de desarrollo.
+- `LOG_FORMAT=json` — una línea JSON por evento, para Azure Log Analytics / Application Insights.
+- `LOG_LEVEL` — `DEBUG`/`INFO`/`WARNING`/`ERROR` (default `INFO`).
+
+Los scripts de línea de comandos (`bronze/civic_explorer.py`, `gold/civic_to_neo4j.py`,
+`pipeline_etl.py`) siguen usando `print()` a propósito — son herramientas que corre un
+humano directamente, no logs de un servicio.
 
 ## Privacidad
 

@@ -1,8 +1,9 @@
 import os
 import json
 from typing import Optional
-from fastapi import FastAPI, HTTPException, File, Form, UploadFile
+from fastapi import FastAPI, HTTPException, File, Form, UploadFile, Depends, Security
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import APIKeyHeader
 from pydantic import BaseModel
 
 # Importaciones nativas de LangChain
@@ -11,14 +12,18 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough, RunnableParallel, RunnableLambda
 
 # Importaciones de Pharox DX
+from app.logging_config import configurar_logging, get_logger
 from app.graph_db import (
-    inicializar_db, 
-    buscar_contexto_hibrido, 
-    obtener_estado_grafo, 
+    inicializar_db,
+    buscar_contexto_hibrido,
+    obtener_estado_grafo,
     obtener_esquema_grafo,
     get_graph
 )
 from app.ai_gateway import get_llm, DEFAULT_MODEL
+
+configurar_logging()
+logger = get_logger("pharox.main")
 
 app = FastAPI(
     title="Pharox DX - Core Engine (LangChain Graph RAG)",
@@ -26,51 +31,108 @@ app = FastAPI(
     description="Backend Server orquestado con LangChain (LCEL), Neo4j y Ollama"
 )
 
+# -------------------------------------------------------------------------
+# CORS — lista explícita de orígenes permitidos (nunca "*" con credentials)
+# -------------------------------------------------------------------------
+CORS_ORIGINS = [o.strip() for o in os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000").split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # -------------------------------------------------------------------------
-# SISTEMA DE LOGS VISUALES EN TIEMPO REAL (Terminal Colors & Emojis)
+# AUTENTICACIÓN POR API KEY
 # -------------------------------------------------------------------------
-class TerminalColors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
+# Todos los endpoints clínicos requieren el header X-API-Key. El health
+# check en "/" queda público para probes de infraestructura (load balancer,
+# Azure Container Apps) que no envían headers custom.
+PHAROX_API_KEY = os.getenv("PHAROX_API_KEY")
+if not PHAROX_API_KEY:
+    raise RuntimeError(
+        "PHAROX_API_KEY no está definida. Agregala al archivo .env antes de "
+        "levantar el backend: PHAROX_API_KEY=<valor secreto>"
+    )
 
+_api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+
+
+def verificar_api_key(api_key: str = Security(_api_key_header)) -> str:
+    if api_key != PHAROX_API_KEY:
+        raise HTTPException(status_code=401, detail="API key inválida o faltante (header X-API-Key).")
+    return api_key
+
+# -------------------------------------------------------------------------
+# LOGS DE LA APLICACIÓN
+# -------------------------------------------------------------------------
+# Mismas firmas que antes (log_info(msg), log_security(msg, blocked=...), etc.)
+# para no tocar los call sites — pero ahora van por logging_config, que en
+# desarrollo local se ve igual de coloreado en la terminal, y en producción
+# (LOG_FORMAT=json) sale como JSON estructurado para Azure Log Analytics.
 def log_info(msg: str):
-    print(f"{TerminalColors.OKCYAN}[INFO] {msg}{TerminalColors.ENDC}")
+    logger.info(msg, extra={"tag": "INFO"})
 
 def log_success(msg: str):
-    print(f"{TerminalColors.OKGREEN}[OK] {msg}{TerminalColors.ENDC}")
+    logger.info(msg, extra={"tag": "OK"})
 
 def log_warning(msg: str):
-    print(f"{TerminalColors.WARNING}[WARN] {msg}{TerminalColors.ENDC}")
+    logger.warning(msg, extra={"tag": "WARN"})
 
 def log_error(msg: str):
-    print(f"{TerminalColors.FAIL}[ERROR] {msg}{TerminalColors.ENDC}")
+    logger.error(msg, extra={"tag": "ERROR"})
 
 def log_security(msg: str, blocked: bool = False):
-    color = TerminalColors.FAIL if blocked else TerminalColors.OKGREEN
-    tag = "[BLOQUEADO]" if blocked else "[APROBADO]"
-    print(f"{TerminalColors.BOLD}{color}[SEGURIDAD] {tag} {msg}{TerminalColors.ENDC}")
+    tag = "SEGURIDAD:BLOQUEADO" if blocked else "SEGURIDAD:APROBADO"
+    nivel = logger.warning if blocked else logger.info
+    nivel(msg, extra={"tag": tag, "bold": True})
 
 def log_clinical(msg: str):
-    print(f"{TerminalColors.HEADER}[CLINICA] {msg}{TerminalColors.ENDC}")
+    logger.info(msg, extra={"tag": "CLINICA", "bold": True})
 
 
 class ConsultaMedicaRequest(BaseModel):
     consulta: str
     tipo_cancer: str = "Cáncer de Mama"
+
+# -------------------------------------------------------------------------
+# MODELOS DE RESPUESTA — documentan en /docs la forma real de cada endpoint
+# -------------------------------------------------------------------------
+class HealthResponse(BaseModel):
+    status: str
+    service: str
+
+class ConsultaResponse(BaseModel):
+    success: bool
+    respuesta: str
+    cypher_utilizado: str
+    evidencia_recuperada: str
+    metodo_recuperacion: str
+
+class EstadoGrafo(BaseModel):
+    nodos: dict[str, int] | None = None
+    relaciones: dict[str, int] | None = None
+    detalles_literatura: list[dict] | None = None
+    error: str | None = None
+
+class DebugGraphResponse(BaseModel):
+    success: bool
+    estado: EstadoGrafo
+
+class IngestaCasoResponse(BaseModel):
+    success: bool
+    caso_id: str
+    resumen_clinico: str
+    hallazgos_extraidos: int
+    eventos_postop_extraidos: int
+    estructura_completa: dict
+
+class BuscarCasosResponse(BaseModel):
+    success: bool
+    casos_encontrados: int
+    casos: list[str]
 
 @app.on_event("startup")
 def startup_event():
@@ -81,7 +143,7 @@ def startup_event():
     except Exception as e:
         log_error(f"Error al inicializar la BD de grafos: {e}")
 
-@app.get("/")
+@app.get("/", response_model=HealthResponse)
 def health_check():
     return {"status": "ok", "service": "Pharox DX LCEL Graph Engine Running"}
 
@@ -160,10 +222,10 @@ def clean_cypher_output(text: str) -> str:
 # CADENA DE GENERACIÓN TEXT-TO-CYPHER (PASO 1)
 # -------------------------------------------------------------------------
 def log_schema_and_query_start(inputs):
-    print("\n" + "=" * 80)
-    log_info(f"Nueva consulta recibida del médico:")
-    print(f"   {TerminalColors.BOLD}Pregunta:{TerminalColors.ENDC} '{inputs['question']}'")
-    print(f"   {TerminalColors.BOLD}Contexto Cáncer:{TerminalColors.ENDC} '{inputs.get('tipo_cancer', 'No Especificado')}'")
+    log_info(
+        f"Nueva consulta recibida del médico: '{inputs['question']}' "
+        f"(contexto cáncer: '{inputs.get('tipo_cancer', 'No Especificado')}')"
+    )
     log_info("Generando consulta Cypher dinámica usando Few-Shot Prompting...")
     return inputs
 
@@ -208,8 +270,7 @@ def ejecutar_y_filtrar_cypher(input_dict: dict) -> dict:
     question = input_dict["question"]
     tipo_cancer = input_dict.get("tipo_cancer", "Cáncer de Mama")
 
-    log_info("Traducción completada. Cypher generado:")
-    print(f"   {TerminalColors.OKBLUE}{cypher_query}{TerminalColors.ENDC}")
+    log_info(f"Traducción completada. Cypher generado: {cypher_query}")
 
     evidencia_cypher = None
     try:
@@ -296,8 +357,10 @@ prompt_clinico = PromptTemplate(
 )
 
 def log_sintesis_start(inputs):
-    log_clinical(f"Sintetizando respuesta con el modelo '{DEFAULT_MODEL}'...")
-    print(f"   {TerminalColors.BOLD}Origen de Evidencia:{TerminalColors.ENDC} {inputs['metodo_recuperacion']}")
+    log_clinical(
+        f"Sintetizando respuesta con el modelo '{DEFAULT_MODEL}' "
+        f"(origen de evidencia: {inputs['metodo_recuperacion']})..."
+    )
     return inputs
 
 llm_sintesis = get_llm(temperature=0.1)
@@ -342,7 +405,7 @@ coordinador_chain = (
 # -------------------------------------------------------------------------
 # ENDPOINTS DE FASTAPI
 # -------------------------------------------------------------------------
-@app.post("/api/v1/consultar")
+@app.post("/api/v1/consultar", dependencies=[Depends(verificar_api_key)], response_model=ConsultaResponse)
 def consultar_copiloto(payload: ConsultaMedicaRequest):
     """
     Endpoint principal de consulta clínica. Orquesta todo el flujo LCEL.
@@ -354,8 +417,7 @@ def consultar_copiloto(payload: ConsultaMedicaRequest):
         }
         # Invocación de la cadena LangChain
         resultado = coordinador_chain.invoke(inputs)
-        
-        print("\n" + "=" * 80)
+
         return {
             "success": True,
             "respuesta": resultado["respuesta"],
@@ -365,13 +427,12 @@ def consultar_copiloto(payload: ConsultaMedicaRequest):
         }
     except Exception as e:
         log_error(f"Excepción en el endpoint: {e}")
-        print("\n" + "=" * 80)
         raise HTTPException(
-            status_code=500, 
+            status_code=500,
             detail=f"Error en el Copiloto Clínico (LangChain Graph RAG): {repr(e)}"
         )
 
-@app.get("/api/v1/debug/graph_db")
+@app.get("/api/v1/debug/graph_db", dependencies=[Depends(verificar_api_key)], response_model=DebugGraphResponse)
 def ver_base_de_grafos():
     try:
         datos = obtener_estado_grafo()
@@ -386,7 +447,7 @@ def ver_base_de_grafos():
 # ENDPOINT DE INGESTA DE CASOS CLÍNICOS REALES (Case-Based Reasoning)
 # -------------------------------------------------------------------------
 
-@app.post("/api/v1/casos/ingestar")
+@app.post("/api/v1/casos/ingestar", dependencies=[Depends(verificar_api_key)], response_model=IngestaCasoResponse)
 async def ingestar_caso_clinico(
     texto: Optional[str] = Form(None, description="Texto libre del informe anatomopatológico o descripción clínica"),
     imagen: Optional[UploadFile] = File(None, description="Imagen (JPG/PNG) del informe médico escaneado")
@@ -425,18 +486,16 @@ async def ingestar_caso_clinico(
     try:
         resultado = procesar_informe(texto=texto, image_bytes=image_bytes)
         log_success(f"Caso clínico ingresado: ID={resultado['caso_id']}, hallazgos={resultado['hallazgos_extraidos']}, eventos_postop={resultado['eventos_postop_extraidos']}")
-        print("\n" + "=" * 80)
         return resultado
     except Exception as e:
         log_error(f"Error al ingestar caso clínico: {e}")
-        print("\n" + "=" * 80)
         raise HTTPException(
             status_code=500,
             detail=f"Error al procesar el caso clínico: {repr(e)}"
         )
 
 
-@app.get("/api/v1/casos/buscar")
+@app.get("/api/v1/casos/buscar", dependencies=[Depends(verificar_api_key)], response_model=BuscarCasosResponse)
 def buscar_casos_similares_endpoint(consulta: str, n: int = 2):
     """
     Busca casos clínicos reales similares a la consulta de texto.
@@ -456,7 +515,7 @@ def buscar_casos_similares_endpoint(consulta: str, n: int = 2):
 class IngestaTextoRequest(BaseModel):
     texto: str
 
-@app.post("/api/v1/casos/ingestar_texto")
+@app.post("/api/v1/casos/ingestar_texto", dependencies=[Depends(verificar_api_key)], response_model=IngestaCasoResponse)
 def ingestar_caso_solo_texto(req: IngestaTextoRequest):
     """
     Ingesta un caso clínico usando únicamente texto (sin imagen).

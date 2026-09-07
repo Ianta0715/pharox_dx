@@ -3,6 +3,9 @@ import json
 from neo4j import GraphDatabase
 from langchain_neo4j import Neo4jGraph
 from app.ai_gateway import generar_embedding
+from app.logging_config import get_logger
+
+logger = get_logger("pharox.graph_db")
 
 NEO4J_URI = os.getenv("NEO4J_URI", "bolt://localhost:7687")
 NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
@@ -46,7 +49,7 @@ def obtener_esquema_nativo_fallback() -> str:
         res_rels = g.query("CALL db.relationshipTypes()")
         rels = [r.get("relationshipType") for r in res_rels if r.get("relationshipType")]
     except Exception as e:
-        print(f"[Schema Fallback] Error obteniendo metadatos nativos: {e}")
+        logger.error(f"[Schema Fallback] Error obteniendo metadatos nativos: {e}")
         labels = ["Paciente", "Tumor", "Tratamiento"]
         rels = ["DIAGNOSTICADO_CON", "TRATADO_CON"]
         
@@ -116,8 +119,8 @@ def obtener_esquema_grafo() -> str:
         g.refresh_schema()
         return g.schema
     except Exception as e:
-        print(f"[Schema Warning] No se pudo obtener el esquema mediante APOC de LangChain: {e}")
-        print("[Schema Fallback] Usando inspección nativa como respaldo seguro.")
+        logger.warning(f"[Schema Warning] No se pudo obtener el esquema mediante APOC de LangChain: {e}")
+        logger.warning("[Schema Fallback] Usando inspección nativa como respaldo seguro.")
         return obtener_esquema_nativo_fallback()
 
 def buscar_archivo(nombre_archivo, directorios_adicionales=None):
@@ -176,7 +179,7 @@ def inicializar_esquema(tx):
 
 def inicializar_db():
     """Inicializa el esquema e ingesta la literatura y los historiales en Neo4j."""
-    print("Inicializando base de datos de grafos Neo4j...")
+    logger.info("Inicializando base de datos de grafos Neo4j...")
     
     # 1. Crear esquema
     with driver.session() as session:
@@ -200,7 +203,7 @@ def inicializar_db():
 
     # Ingestar literatura si está vacía
     if lit_count == 0 and path_lit:
-        print(f"Cargando literatura en Neo4j desde {path_lit}...")
+        logger.info(f"Cargando literatura en Neo4j desde {path_lit}...")
         try:
             with open(path_lit, "r", encoding="utf-8") as f:
                 data_lit = json.load(f)
@@ -225,7 +228,7 @@ def inicializar_db():
                         f"Fuente: {fuente}"
                     )
                     
-                    print(f"   Generating embedding for lit_{idx}...")
+                    logger.info(f"   Generating embedding for lit_{idx}...")
                     vector = generar_embedding(texto)
                     
                     session.run("""
@@ -245,15 +248,15 @@ def inicializar_db():
                         "drogas": drogas,
                         "embedding": vector
                     })
-            print("Literatura ingesta en Neo4j de forma correcta.")
+            logger.info("Literatura ingesta en Neo4j de forma correcta.")
         except Exception as e:
-            print(f"Error al ingestar literatura en Neo4j: {e}")
+            logger.error(f"Error al ingestar literatura en Neo4j: {e}")
     else:
-        print(f"Omitiendo ingesta de literatura. Ya contiene {lit_count} registros.")
+        logger.info(f"Omitiendo ingesta de literatura. Ya contiene {lit_count} registros.")
 
     # Ingestar historial clínico (Capa Gold) si está vacío
     if paciente_count == 0 and path_gold:
-        print(f"Cargando historial clínico en Neo4j desde {path_gold}...")
+        logger.info(f"Cargando historial clínico en Neo4j desde {path_gold}...")
         try:
             with open(path_gold, "r", encoding="utf-8") as f:
                 data_gold = json.load(f)
@@ -295,11 +298,11 @@ def inicializar_db():
                         "descripcion": diag_desc,
                         "droga": droga
                     })
-            print("Historial clínico (Capa Gold) mapeado en Neo4j con éxito.")
+            logger.info("Historial clínico (Capa Gold) mapeado en Neo4j con éxito.")
         except Exception as e:
-            print(f"Error al mapear Capa Gold en Neo4j: {e}")
+            logger.error(f"Error al mapear Capa Gold en Neo4j: {e}")
     else:
-        print(f"Omitiendo ingesta de historial clínico. Ya contiene {paciente_count} pacientes.")
+        logger.info(f"Omitiendo ingesta de historial clínico. Ya contiene {paciente_count} pacientes.")
 
 def buscar_casos_similares(texto_consulta: str, n_results: int = 2) -> list[str]:
     """
@@ -341,10 +344,10 @@ def buscar_casos_similares(texto_consulta: str, n_results: int = 2) -> list[str]
                 contexto += f" | Complicaciones post-op: {eventos_str}"
 
             contextos.append(contexto)
-            print(f"[Casos Similares] Caso encontrado con score {score:.2f}")
+            logger.info(f"[Casos Similares] Caso encontrado con score {score:.2f}")
 
     except Exception as e:
-        print(f"[Casos Similares] Error en búsqueda vectorial de casos: {e}")
+        logger.error(f"[Casos Similares] Error en búsqueda vectorial de casos: {e}")
 
     return contextos
 
@@ -425,10 +428,10 @@ def buscar_evidencia_civic(texto_consulta: str, tipo_cancer: str = None, n_resul
                 contexto += f" | Fuente(s): {fuentes_str}"
 
             contextos.append(contexto)
-            print(f"[Evidencia CIViC] Coincidencia encontrada: gen={record.get('gen')}")
+            logger.info(f"[Evidencia CIViC] Coincidencia encontrada: gen={record.get('gen')}")
 
     except Exception as e:
-        print(f"[Evidencia CIViC] Error en búsqueda por palabras clave: {e}")
+        logger.error(f"[Evidencia CIViC] Error en búsqueda por palabras clave: {e}")
 
     return contextos
 
@@ -467,7 +470,7 @@ def buscar_contexto_hibrido(query: str, tipo_cancer: str = None, n_results: int 
             if vec_count >= n_results:
                 break
     except Exception as e:
-        print(f"Error en búsqueda vectorial Neo4j: {e}")
+        logger.error(f"Error en búsqueda vectorial Neo4j: {e}")
 
     # 2. Búsqueda de Relaciones en el Grafo Clínico (Graph Traversing)
     if tipo_cancer and tipo_cancer != "No Especificado":
@@ -486,25 +489,25 @@ def buscar_contexto_hibrido(query: str, tipo_cancer: str = None, n_results: int 
                 )
                 contextos.append(historial_str)
         except Exception as e:
-            print(f"Error en consulta de relaciones Neo4j: {e}")
+            logger.error(f"Error en consulta de relaciones Neo4j: {e}")
 
     # 3. Búsqueda de Casos Clínicos Reales Similares (Case-Based Reasoning)
     try:
         casos_similares = buscar_casos_similares(query, n_results=2)
         if casos_similares:
             contextos.extend(casos_similares)
-            print(f"[Híbrida] {len(casos_similares)} caso(s) clínico(s) real(es) recuperado(s).")
+            logger.info(f"[Híbrida] {len(casos_similares)} caso(s) clínico(s) real(es) recuperado(s).")
     except Exception as e:
-        print(f"Error en búsqueda de casos clínicos similares: {e}")
+        logger.error(f"Error en búsqueda de casos clínicos similares: {e}")
 
     # 4. Búsqueda de Evidencia Clínico-Molecular en el subgrafo CIViC
     try:
         evidencia_civic = buscar_evidencia_civic(query, tipo_cancer=tipo_cancer, n_results=n_results)
         if evidencia_civic:
             contextos.extend(evidencia_civic)
-            print(f"[Híbrida] {len(evidencia_civic)} evidencia(s) CIViC recuperada(s).")
+            logger.info(f"[Híbrida] {len(evidencia_civic)} evidencia(s) CIViC recuperada(s).")
     except Exception as e:
-        print(f"Error en búsqueda de evidencia CIViC: {e}")
+        logger.error(f"Error en búsqueda de evidencia CIViC: {e}")
 
     return contextos
 
@@ -538,5 +541,5 @@ def obtener_estado_grafo():
             "detalles_literatura": detalles_lit
         }
     except Exception as e:
-        print(f"Error al obtener estado del grafo: {e}")
+        logger.error(f"Error al obtener estado del grafo: {e}")
         return {"error": str(e)}
