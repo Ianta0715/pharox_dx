@@ -2,7 +2,7 @@ import os
 from langchain_ollama import ChatOllama, OllamaEmbeddings
 
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
-DEFAULT_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:7b")
+DEFAULT_MODEL = os.getenv("OLLAMA_MODEL", "qwen3:8b")
 
 def get_llm(model: str = DEFAULT_MODEL, temperature: float = 0.0) -> ChatOllama:
     """
