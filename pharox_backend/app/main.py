@@ -186,6 +186,18 @@ EXAMPLES = [
     {
         "question": "¿Qué antecedentes médicos tienen los pacientes registrados?",
         "query": "MATCH (p:Paciente)-[:TIENE_ANTECEDENTE]->(a:AntecedenteMedico) RETURN p.hash AS paciente, a.tipo AS tipo, a.medicacion AS medicacion"
+    },
+    {
+        "question": "¿Qué ensayos clínicos activos existen para cáncer de mama HER2 positivo?",
+        "query": "MATCH (e:EnsayoClinico) WHERE e.estado = 'RECRUITING' AND ANY(c IN e.condiciones WHERE toLower(c) CONTAINS 'breast') AND ANY(c IN e.condiciones WHERE toLower(c) CONTAINS 'her2') RETURN e.nct_id AS nct_id, e.titulo AS titulo, e.fases AS fases"
+    },
+    {
+        "question": "¿Cuál es la clasificación clínica de las variantes de BRCA1 en ClinVar?",
+        "query": "MATCH (v:VarianteClinVar {{gen: 'BRCA1'}}) RETURN v.nombre AS variante, v.clasificacion_clinica AS clasificacion, v.review_status AS revision"
+    },
+    {
+        "question": "¿Con qué frecuencia se altera el gen PIK3CA en estudios de cBioPortal de cáncer de mama?",
+        "query": "MATCH (est:EstudioCBio)-[:REPORTA_FRECUENCIA]->(f:FrecuenciaGenCBio)-[:SOBRE_GEN]->(g:GenCBio {{hugo_symbol: 'PIK3CA'}}) RETURN est.nombre AS estudio, f.porcentaje AS porcentaje_alterado, f.tipo_alteracion AS tipo"
     }
 ]
 
@@ -345,7 +357,7 @@ similares registrados en la base de datos.
 
 Instrucciones para estructurar tu respuesta:
 1. **Sugerencias Basadas en Casos Reales (CBR):** Solo si la evidencia contiene fragmentos marcados literalmente como "[CASO CLÍNICO REAL SIMILAR]", cita esos casos (edad, tratamientos aplicados, complicaciones post-operatorias y cómo se resolvieron) tal como aparecen en la evidencia, sin agregar detalles que no estén ahí. Si no hay ninguno, decilo explícitamente.
-2. **Evidencia Molecular (CIViC):** Si la evidencia contiene fragmentos marcados como "[EVIDENCIA CIViC]", citalos indicando el gen/variante, la enfermedad, el nivel de evidencia y la(s) terapia(s) asociada(s) tal como figuran.
+2. **Evidencia Estructurada del Grafo:** Si la evidencia contiene fragmentos marcados con una etiqueta entre corchetes (p. ej. "[EVIDENCIA CIViC]", "[ENSAYO CLÍNICO]", "[VARIANTE CLINVAR]", "[FRECUENCIA CBIOPORTAL]"), citalos agrupados por etiqueta, indicando los campos relevantes tal como figuran (gen/variante, enfermedad, nivel de evidencia y terapia(s) para CIViC; fase/estado/condición/intervención para ensayos; clasificación clínica para ClinVar; frecuencia poblacional para cBioPortal), sin mezclar información de una etiqueta con otra.
 3. **Recomendaciones de la Literatura Científica:** Utiliza la evidencia de estudios y papers para justificar decisiones farmacológicas o clínicas con base científica, citando solo lo que efectivamente está en la evidencia.
 4. **Claridad y Rigor:** Responde con rigor oncológico, de forma estructurada, usando viñetas claras y en español.
 5. **Ausencia de Evidencia:** Si la evidencia está vacía o no responde a la pregunta, dilo con honestidad y sugiere estudios complementarios en vez de inventar contenido.

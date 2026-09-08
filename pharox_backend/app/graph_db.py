@@ -1,5 +1,6 @@
 import os
 import json
+import unicodedata
 from neo4j import GraphDatabase
 from langchain_neo4j import Neo4jGraph
 from app.ai_gateway import generar_embedding
@@ -33,6 +34,16 @@ def get_graph() -> Neo4jGraph:
             refresh_schema=False
         )
     return _graph_instance
+
+NOTA_INDEPENDENCIA_SUBGRAFOS = (
+    "\nNota importante: los subgrafos de conocimiento público (CIViC, EnsayoClinico, "
+    "VarianteClinVar, EstudioCBio) son independientes entre sí y del subgrafo clínico de "
+    "pacientes (Paciente -> Tumor/CasoClinico); no existen relaciones directas entre ellos. "
+    "Para preguntas sobre pacientes o historiales, consulta el subgrafo clínico; para "
+    "evidencia científica, ensayos, variantes o frecuencia poblacional, consulta el "
+    "subgrafo público correspondiente.\n"
+)
+
 
 def obtener_esquema_nativo_fallback() -> str:
     """
@@ -70,6 +81,12 @@ def obtener_esquema_nativo_fallback() -> str:
         "Enfermedad": "civic_id (Integer), nombre (String), nombre_mostrado (String), doid (String)",
         "Terapia": "civic_id (Integer), nombre (String), ncit_id (String)",
         "Fuente": "civic_id (Integer), pubmed_id (String), tipo_fuente (String), cita (String), anio (Integer), journal (String), url (String)",
+        "EnsayoClinico": "nct_id (String), titulo (String), fases (List<String>), estado (String), condiciones (List<String>), intervenciones (List<String>), sponsor (String), resumen (String), paises (List<String>), url (String)",
+        "VarianteClinVar": "variation_id (Integer), nombre (String), gen (String), tipo_variante (String), hgvs_c (String), hgvs_p (String), assembly (String), cromosoma (String), posicion (String), clasificacion_clinica (String), review_status (String), ultima_evaluacion (String)",
+        "CondicionClinVar": "nombre (String), medgen_id (String)",
+        "EstudioCBio": "study_id (String), nombre (String), descripcion (String), n_pacientes (Integer)",
+        "GenCBio": "entrez_id (Integer), hugo_symbol (String)",
+        "FrecuenciaGenCBio": "frecuencia_id (String), n_alterados (Integer), n_perfilados (Integer), porcentaje (Float), tipo_alteracion (String)",
     }
 
     relaciones_conocidas = [
@@ -84,6 +101,9 @@ def obtener_esquema_nativo_fallback() -> str:
         ("ASOCIADA_A_ENFERMEDAD", "Evidencia", "Enfermedad"),
         ("INVOLUCRA_TERAPIA", "Evidencia", "Terapia"),
         ("RESPALDADA_POR", "Evidencia", "Fuente"),
+        ("ASOCIADA_A_CONDICION", "VarianteClinVar", "CondicionClinVar"),
+        ("REPORTA_FRECUENCIA", "EstudioCBio", "FrecuenciaGenCBio"),
+        ("SOBRE_GEN", "FrecuenciaGenCBio", "GenCBio"),
     ]
 
     schema_str = "Nodos y propiedades en la base de datos de grafos:\n"
@@ -96,15 +116,7 @@ def obtener_esquema_nativo_fallback() -> str:
         if rel in rels or not rels:
             schema_str += f"- (:{origen})-[:{rel}]->(:{destino})\n"
 
-    schema_str += (
-        "\nNota importante: el subgrafo de conocimiento CIViC "
-        "(Variante -> Evidencia -> Enfermedad/Terapia/Fuente) es independiente "
-        "del subgrafo clínico de pacientes (Paciente -> Tumor/CasoClinico); "
-        "no existen relaciones directas entre Tumor/Paciente y Variante/Evidencia. "
-        "Para preguntas sobre evidencia científica, mutaciones o terapias dirigidas, "
-        "consulta el subgrafo CIViC; para preguntas sobre pacientes o historiales, "
-        "consulta el subgrafo clínico.\n"
-    )
+    schema_str += NOTA_INDEPENDENCIA_SUBGRAFOS
 
     return schema_str
 
@@ -117,7 +129,10 @@ def obtener_esquema_grafo() -> str:
     g = get_graph()
     try:
         g.refresh_schema()
-        return g.schema
+        # g.schema viene de la introspección automática de APOC (labels/relaciones/
+        # tipos), pero no incluye la nota de independencia entre subgrafos — sin
+        # esto el LLM podría alucinar joins entre, p. ej., Tumor y EnsayoClinico.
+        return g.schema + NOTA_INDEPENDENCIA_SUBGRAFOS
     except Exception as e:
         logger.warning(f"[Schema Warning] No se pudo obtener el esquema mediante APOC de LangChain: {e}")
         logger.warning("[Schema Fallback] Usando inspección nativa como respaldo seguro.")
@@ -166,6 +181,11 @@ def inicializar_esquema(tx):
     tx.run("CREATE CONSTRAINT unique_caso_id IF NOT EXISTS FOR (c:CasoClinico) REQUIRE c.id IS UNIQUE")
     tx.run("CREATE CONSTRAINT unique_hallazgo_id IF NOT EXISTS FOR (h:HallazgoPatologico) REQUIRE h.id IS UNIQUE")
     tx.run("CREATE CONSTRAINT unique_evento_id IF NOT EXISTS FOR (e:EventoPostOperatorio) REQUIRE e.id IS UNIQUE")
+
+    # 3b. Restricción de unicidad para Literatura (faltaba: hoy la ingesta sintética
+    # solo evita duplicados corriendo una vez sobre grafo vacío; los gold scripts que
+    # hacen MERGE repetible, como europepmc_to_neo4j.py, la necesitan explícita).
+    tx.run("CREATE CONSTRAINT unique_literatura_id IF NOT EXISTS FOR (l:Literatura) REQUIRE l.id IS UNIQUE")
 
     # 4. Índice vectorial para casos clínicos reales (búsqueda por similitud)
     tx.run("""
@@ -359,6 +379,17 @@ _STOPWORDS_CIVIC = {
 }
 
 
+def _normalizar_texto_comparacion(texto: str) -> str:
+    """
+    Normaliza (sin tildes, minúsculas, sin espacios extra) para comparar tipo_cancer
+    sin depender de que cada fuente nueva escriba el literal exacto "Cáncer de Mama".
+    """
+    if not texto:
+        return ""
+    sin_tildes = unicodedata.normalize("NFKD", texto).encode("ascii", "ignore").decode("ascii")
+    return sin_tildes.strip().lower()
+
+
 def _extraer_palabras_clave(texto: str) -> list[str]:
     """Extrae tokens relevantes (>=4 letras, sin stopwords) de un texto libre."""
     if not texto:
@@ -436,6 +467,168 @@ def buscar_evidencia_civic(texto_consulta: str, tipo_cancer: str = None, n_resul
     return contextos
 
 
+def buscar_ensayos_clinicos(texto_consulta: str, tipo_cancer: str = None, n_results: int = 3) -> list[str]:
+    """
+    Busca ensayos clinicos (subgrafo independiente :EnsayoClinico, ver
+    app/gold/clinicaltrials_to_neo4j.py) por coincidencia de palabras clave en
+    condiciones, intervenciones o titulo. condiciones/intervenciones son listas,
+    por eso usa ANY(...) en vez de CONTAINS directo (que solo aplica a strings).
+    """
+    contextos = []
+    g = get_graph()
+
+    palabras = _extraer_palabras_clave(texto_consulta) + _extraer_palabras_clave(tipo_cancer)
+    if not palabras:
+        return contextos
+
+    try:
+        res = g.query("""
+            UNWIND $palabras AS kw
+            MATCH (e:EnsayoClinico)
+            WHERE ANY(c IN e.condiciones WHERE toLower(c) CONTAINS kw)
+               OR ANY(i IN e.intervenciones WHERE toLower(i) CONTAINS kw)
+               OR toLower(coalesce(e.titulo, '')) CONTAINS kw
+            WITH DISTINCT e
+            RETURN
+                e.nct_id AS nct_id,
+                e.titulo AS titulo,
+                e.fases AS fases,
+                e.estado AS estado,
+                e.condiciones AS condiciones,
+                e.intervenciones AS intervenciones,
+                e.url AS url
+            LIMIT $n_results
+        """, {"palabras": palabras, "n_results": n_results})
+
+        for record in res:
+            condiciones_str = ", ".join(record.get("condiciones") or [])
+            intervenciones_str = ", ".join(record.get("intervenciones") or [])
+            fases_str = ", ".join(record.get("fases") or [])
+
+            contexto = (
+                f"[ENSAYO CLÍNICO] {record.get('nct_id', '?')}: {record.get('titulo', '')} "
+                f"| Estado: {record.get('estado', '?')}"
+            )
+            if fases_str:
+                contexto += f" | Fase: {fases_str}"
+            if condiciones_str:
+                contexto += f" | Condición(es): {condiciones_str}"
+            if intervenciones_str:
+                contexto += f" | Intervención(es): {intervenciones_str}"
+            if record.get("url"):
+                contexto += f" | {record.get('url')}"
+
+            contextos.append(contexto)
+            logger.info(f"[Ensayos Clínicos] Coincidencia encontrada: {record.get('nct_id')}")
+
+    except Exception as e:
+        logger.error(f"[Ensayos Clínicos] Error en búsqueda por palabras clave: {e}")
+
+    return contextos
+
+
+def buscar_variantes_clinvar(texto_consulta: str, tipo_cancer: str = None, n_results: int = 3) -> list[str]:
+    """
+    Busca variantes clasificadas clinicamente en el subgrafo independiente
+    :VarianteClinVar (ver app/gold/clinvar_to_neo4j.py) por coincidencia de
+    palabras clave en gen, nombre de la variante o condicion asociada.
+    """
+    contextos = []
+    g = get_graph()
+
+    palabras = _extraer_palabras_clave(texto_consulta) + _extraer_palabras_clave(tipo_cancer)
+    if not palabras:
+        return contextos
+
+    try:
+        res = g.query("""
+            UNWIND $palabras AS kw
+            MATCH (v:VarianteClinVar)
+            OPTIONAL MATCH (v)-[:ASOCIADA_A_CONDICION]->(c:CondicionClinVar)
+            WHERE toLower(coalesce(v.gen, '')) CONTAINS kw
+               OR toLower(coalesce(v.nombre, '')) CONTAINS kw
+               OR toLower(coalesce(c.nombre, '')) CONTAINS kw
+            WITH DISTINCT v, collect(DISTINCT c.nombre) AS condiciones
+            RETURN
+                v.gen AS gen,
+                v.hgvs_c AS hgvs_c,
+                v.hgvs_p AS hgvs_p,
+                v.clasificacion_clinica AS clasificacion,
+                v.review_status AS review_status,
+                condiciones
+            LIMIT $n_results
+        """, {"palabras": palabras, "n_results": n_results})
+
+        for record in res:
+            condiciones_str = ", ".join([c for c in record.get("condiciones", []) if c][:3])
+
+            contexto = (
+                f"[VARIANTE CLINVAR] Gen {record.get('gen', '?')} "
+                f"{record.get('hgvs_c', '')} ({record.get('hgvs_p', '')}) "
+                f"| Clasificación: {record.get('clasificacion', 'No clasificada')}"
+            )
+            if record.get("review_status"):
+                contexto += f" | Revisión: {record.get('review_status')}"
+            if condiciones_str:
+                contexto += f" | Condición(es): {condiciones_str}"
+
+            contextos.append(contexto)
+            logger.info(f"[Variantes ClinVar] Coincidencia encontrada: gen={record.get('gen')}")
+
+    except Exception as e:
+        logger.error(f"[Variantes ClinVar] Error en búsqueda por palabras clave: {e}")
+
+    return contextos
+
+
+def buscar_frecuencia_cbioportal(texto_consulta: str, tipo_cancer: str = None, n_results: int = 3) -> list[str]:
+    """
+    Busca frecuencia de alteracion (mutacion o CNA) por gen en el subgrafo
+    independiente EstudioCBio/GenCBio/FrecuenciaGenCBio (ver
+    app/gold/cbioportal_to_neo4j.py) por coincidencia de palabras clave en el
+    simbolo del gen o el nombre del estudio.
+    """
+    contextos = []
+    g = get_graph()
+
+    palabras = _extraer_palabras_clave(texto_consulta) + _extraer_palabras_clave(tipo_cancer)
+    if not palabras:
+        return contextos
+
+    try:
+        res = g.query("""
+            UNWIND $palabras AS kw
+            MATCH (est:EstudioCBio)-[:REPORTA_FRECUENCIA]->(f:FrecuenciaGenCBio)-[:SOBRE_GEN]->(g:GenCBio)
+            WHERE toLower(coalesce(g.hugo_symbol, '')) CONTAINS kw
+               OR toLower(coalesce(est.nombre, '')) CONTAINS kw
+            WITH DISTINCT est, f, g
+            RETURN
+                g.hugo_symbol AS gen,
+                f.tipo_alteracion AS tipo_alteracion,
+                f.porcentaje AS porcentaje,
+                f.n_alterados AS n_alterados,
+                f.n_perfilados AS n_perfilados,
+                est.nombre AS estudio
+            ORDER BY f.porcentaje DESC
+            LIMIT $n_results
+        """, {"palabras": palabras, "n_results": n_results})
+
+        for record in res:
+            contexto = (
+                f"[FRECUENCIA CBIOPORTAL] Gen {record.get('gen', '?')}: "
+                f"{record.get('tipo_alteracion', '?')} en {record.get('porcentaje', 0)}% "
+                f"({record.get('n_alterados', 0)}/{record.get('n_perfilados', 0)} casos) "
+                f"| Estudio: {record.get('estudio', '?')}"
+            )
+            contextos.append(contexto)
+            logger.info(f"[Frecuencia cBioPortal] Coincidencia encontrada: gen={record.get('gen')}")
+
+    except Exception as e:
+        logger.error(f"[Frecuencia cBioPortal] Error en búsqueda por palabras clave: {e}")
+
+    return contextos
+
+
 def buscar_contexto_hibrido(query: str, tipo_cancer: str = None, n_results: int = 3) -> list[str]:
     """
     Realiza una búsqueda híbrida (Graph RAG) utilizando Neo4jGraph de LangChain:
@@ -443,6 +636,9 @@ def buscar_contexto_hibrido(query: str, tipo_cancer: str = None, n_results: int 
     2. Recorrido de Relaciones en el Grafo Clínico de Pacientes reales.
     3. Casos clínicos reales similares (búsqueda vectorial de CasoClinico).
     4. Evidencia clínico-molecular del subgrafo CIViC (Variante/Evidencia/Terapia).
+    5. Ensayos clínicos activos del subgrafo EnsayoClinico (ClinicalTrials.gov).
+    6. Variantes clasificadas del subgrafo VarianteClinVar (ClinVar).
+    7. Frecuencia de alteración por gen del subgrafo EstudioCBio (cBioPortal).
     """
     contextos = []
     g = get_graph()
@@ -461,8 +657,13 @@ def buscar_contexto_hibrido(query: str, tipo_cancer: str = None, n_results: int 
             node_cancer = record.get("tipo_cancer")
             node_text = record.get("text")
             
-            # Filtrar por tipo de cáncer si es necesario
-            if tipo_cancer and tipo_cancer != "No Especificado" and node_cancer != tipo_cancer:
+            # Filtrar por tipo de cáncer si es necesario (comparación normalizada:
+            # no depende de que la fuente haya escrito el literal exacto)
+            if (
+                tipo_cancer
+                and tipo_cancer != "No Especificado"
+                and _normalizar_texto_comparacion(node_cancer) != _normalizar_texto_comparacion(tipo_cancer)
+            ):
                 continue
                 
             contextos.append(node_text)
@@ -508,6 +709,33 @@ def buscar_contexto_hibrido(query: str, tipo_cancer: str = None, n_results: int 
             logger.info(f"[Híbrida] {len(evidencia_civic)} evidencia(s) CIViC recuperada(s).")
     except Exception as e:
         logger.error(f"Error en búsqueda de evidencia CIViC: {e}")
+
+    # 5. Búsqueda de Ensayos Clínicos Activos (subgrafo EnsayoClinico)
+    try:
+        ensayos = buscar_ensayos_clinicos(query, tipo_cancer=tipo_cancer, n_results=2)
+        if ensayos:
+            contextos.extend(ensayos)
+            logger.info(f"[Híbrida] {len(ensayos)} ensayo(s) clínico(s) recuperado(s).")
+    except Exception as e:
+        logger.error(f"Error en búsqueda de ensayos clínicos: {e}")
+
+    # 6. Búsqueda de Variantes Clasificadas (subgrafo VarianteClinVar)
+    try:
+        variantes_clinvar = buscar_variantes_clinvar(query, tipo_cancer=tipo_cancer, n_results=2)
+        if variantes_clinvar:
+            contextos.extend(variantes_clinvar)
+            logger.info(f"[Híbrida] {len(variantes_clinvar)} variante(s) ClinVar recuperada(s).")
+    except Exception as e:
+        logger.error(f"Error en búsqueda de variantes ClinVar: {e}")
+
+    # 7. Búsqueda de Frecuencia de Alteración (subgrafo EstudioCBio/GenCBio)
+    try:
+        frecuencias = buscar_frecuencia_cbioportal(query, tipo_cancer=tipo_cancer, n_results=2)
+        if frecuencias:
+            contextos.extend(frecuencias)
+            logger.info(f"[Híbrida] {len(frecuencias)} frecuencia(s) cBioPortal recuperada(s).")
+    except Exception as e:
+        logger.error(f"Error en búsqueda de frecuencia cBioPortal: {e}")
 
     return contextos
 

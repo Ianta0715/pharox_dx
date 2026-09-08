@@ -46,6 +46,11 @@ services:
       - neo4j_logs:/logs
     environment:
       - NEO4J_AUTH=neo4j/pharoxpass
+      # APOC habilita apoc.meta.* / apoc.schema.* que usa Neo4jGraph (LangChain) para
+      # auto-introspeccionar el esquema real; sin esto, el text-to-Cypher siempre usa
+      # el fallback hardcodeado de app/graph_db.py::obtener_esquema_nativo_fallback.
+      - NEO4J_PLUGINS=["apoc"]
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*
     restart: unless-stopped
 
   backend:

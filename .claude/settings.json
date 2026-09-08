@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s 'https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=breast%20cancer%20AND%20HER2%20AND%20SRC%3AMED&format=json&resultType=core&pageSize=3' -o 'C:\\\\Users\\\\birel\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-birel-OneDrive-Desktop-Ian-proyectos-Pharox\\\\bdf62e5e-4243-40bb-83d3-ed80fbcdaa29\\\\scratchpad/epmc_sample.json')",
+      "Bash(.venv/Scripts/python.exe -m json.tool 'C:\\\\Users\\\\birel\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-birel-OneDrive-Desktop-Ian-proyectos-Pharox\\\\bdf62e5e-4243-40bb-83d3-ed80fbcdaa29\\\\scratchpad/epmc_sample.json')",
+      "Bash(.venv/Scripts/python.exe -c ' *)"
+    ]
+  }
+}

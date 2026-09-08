@@ -1,13 +1,15 @@
 # Pharox DX
 
-Copiloto clínico de oncología de precisión. Combina conocimiento científico público (CIViC) con
-casos clínicos reales anonimizados en un grafo de conocimiento Neo4j, y usa LangChain (LCEL) +
-un LLM local (Ollama) para responder preguntas médicas en lenguaje natural traduciéndolas a
-Cypher y sintetizando la evidencia recuperada.
+Copiloto clínico de oncología de precisión, enfocado en cáncer de mama. Combina conocimiento
+científico público (CIViC, ClinVar, ClinicalTrials.gov, cBioPortal, Europe PMC) con casos
+clínicos reales anonimizados en un grafo de conocimiento Neo4j, y usa LangChain (LCEL) + un LLM
+local (Ollama) para responder preguntas médicas en lenguaje natural traduciéndolas a Cypher y
+sintetizando la evidencia recuperada.
 
 ## Arquitectura
 
-El grafo de Neo4j combina dos subgrafos independientes (no hay relaciones directas entre ellos):
+El grafo de Neo4j combina varios subgrafos independientes entre sí (no hay relaciones directas
+entre ellos — ver la nota de independencia en `app/graph_db.py`) más el subgrafo clínico:
 
 ```
 CIViC (conocimiento científico público)
@@ -16,6 +18,15 @@ CIViC (conocimiento científico público)
   (Evidencia)-[:INVOLUCRA_TERAPIA]->(Terapia)
   (Evidencia)-[:RESPALDADA_POR]->(Fuente)
 
+ClinicalTrials.gov (ensayos clínicos activos)
+  (EnsayoClinico {condiciones, intervenciones, fase, estado, ...})  — nodo plano, sin relaciones
+
+ClinVar (variantes clasificadas clínicamente, con HGVS/coordenadas que CIViC no expone)
+  (VarianteClinVar)-[:ASOCIADA_A_CONDICION]->(CondicionClinVar)
+
+cBioPortal (frecuencia de alteración en cohortes públicas reales)
+  (EstudioCBio)-[:REPORTA_FRECUENCIA]->(FrecuenciaGenCBio)-[:SOBRE_GEN]->(GenCBio)
+
 Clínico (pacientes anonimizados)
   (Paciente)-[:DIAGNOSTICADO_CON]->(Tumor)-[:TRATADO_CON]->(Tratamiento)
   (Paciente)-[:CORRESPONDE_A]->(CasoClinico)-[:INCLUYE_HALLAZGO]->(HallazgoPatologico)-[:ASOCIADO_A_TUMOR]->(Tumor)
@@ -23,10 +34,23 @@ Clínico (pacientes anonimizados)
   (Paciente)-[:TIENE_ANTECEDENTE]->(AntecedenteMedico)
 ```
 
-Pipelines de ingesta (arquitectura medallion, capas bronze/silver/gold):
+`Literatura` (búsqueda vectorial, ver más abajo) no es un subgrafo propio: es una etiqueta que ya
+existía para literatura sintética de ejemplo, y que Europe PMC repuebla con artículos reales.
 
-- **CIViC**: `app/bronze/civic_explorer.py` (consulta la API GraphQL de civicdb.org) →
-  `app/gold/civic_to_neo4j.py` (normaliza e ingesta en Neo4j).
+Pipelines de ingesta (arquitectura medallion, capas bronze/silver/gold). Las cinco fuentes
+públicas siguen el mismo patrón: `app/bronze/<fuente>_explorer.py` (consulta la API pública,
+filtra a cáncer de mama) → `app/gold/<fuente>_to_neo4j.py` (normaliza e ingesta en Neo4j):
+
+- **CIViC**: `app/bronze/civic_explorer.py` (GraphQL de civicdb.org, requiere `CIVIC_API_KEY`) →
+  `app/gold/civic_to_neo4j.py`.
+- **ClinicalTrials.gov**: `app/bronze/clinicaltrials_explorer.py` (REST v2, sin auth) →
+  `app/gold/clinicaltrials_to_neo4j.py`.
+- **ClinVar**: `app/bronze/clinvar_explorer.py` (NCBI E-utilities, `NCBI_API_KEY` opcional) →
+  `app/gold/clinvar_to_neo4j.py`.
+- **cBioPortal**: `app/bronze/cbioportal_explorer.py` (REST público, sin auth) →
+  `app/gold/cbioportal_to_neo4j.py`.
+- **Europe PMC**: `app/bronze/europepmc_explorer.py` (REST público, sin auth) →
+  `app/gold/europepmc_to_neo4j.py` (requiere Ollama levantado: genera embeddings).
 - **Pacientes (FHIR sintético)**: `app/pipeline_etl.py` anonimiza (SHA-256 + salt) y estructura
   el dataset en capas silver/gold → `graph_db.py` lo ingesta en Neo4j al arrancar el backend.
 - **Casos clínicos reales**: `app/etl_casos_clinicos.py` — recibe texto u OCR de un informe,
@@ -39,9 +63,10 @@ Motor de consultas (`app/main.py`, orquestado con LangChain LCEL):
    sobre el esquema real del grafo.
 2. **Filtro de seguridad**: solo se permiten operaciones de lectura (`MATCH`/`RETURN`); cualquier
    `DELETE`/`CREATE`/`MERGE`/`SET`/`REMOVE`/`DETACH` generado por el LLM se bloquea.
-3. **Fallback híbrido** (si el Cypher falla, es bloqueado o no devuelve nada): búsqueda vectorial
-   sobre `Literatura` y `CasoClinico`, recorrido de relaciones fijo en el subgrafo clínico, y
-   búsqueda por palabras clave en el subgrafo CIViC.
+3. **Búsqueda híbrida** (se ejecuta siempre como complemento, no solo si el Cypher dirigido
+   falla): búsqueda vectorial sobre `Literatura` y `CasoClinico`, recorrido de relaciones fijo en
+   el subgrafo clínico, y búsqueda por palabras clave en los subgrafos públicos independientes
+   (CIViC, ClinicalTrials.gov, ClinVar, cBioPortal).
 4. **Síntesis clínica**: un segundo prompt redacta la respuesta final citando la evidencia
    recuperada (papers, casos reales similares, evidencia CIViC).
 
@@ -73,11 +98,32 @@ regenerar el pin con el comando documentado en el encabezado de `requirements.tx
 `python:3.10-slim`, la misma base que el `Dockerfile`, para que las versiones resueltas sean
 las que realmente corren en producción).
 
-### Cargar conocimiento CIViC (opcional, fuera de Docker)
+### Cargar conocimiento público (opcional, fuera de Docker)
+
+Requiere el backend levantado al menos una vez antes (crea las constraints e índices de
+`graph_db.py`, incluida la de `Literatura` que usa Europe PMC). Cada fuente sigue el mismo
+patrón bronze → gold:
 
 ```bash
+# CIViC (requiere CIVIC_API_KEY en .env)
 python -m app.bronze.civic_explorer BRAF V600E
 python -m app.gold.civic_to_neo4j
+
+# ClinicalTrials.gov (sin auth)
+python -m app.bronze.clinicaltrials_explorer "breast cancer" RECRUITING
+python -m app.gold.clinicaltrials_to_neo4j
+
+# ClinVar (NCBI_API_KEY opcional, sube el rate limit de 3 a 10 req/s)
+python -m app.bronze.clinvar_explorer BRCA1
+python -m app.gold.clinvar_to_neo4j
+
+# cBioPortal (sin auth)
+python -m app.bronze.cbioportal_explorer brca_metabric
+python -m app.gold.cbioportal_to_neo4j
+
+# Europe PMC (sin auth, pero el gold necesita Ollama levantado para los embeddings)
+python -m app.bronze.europepmc_explorer
+python -m app.gold.europepmc_to_neo4j
 ```
 
 ## Endpoints principales
@@ -123,7 +169,7 @@ la imagen Docker para detectar roturas del `Dockerfile`.
 - `LOG_FORMAT=json` — una línea JSON por evento, para Azure Log Analytics / Application Insights.
 - `LOG_LEVEL` — `DEBUG`/`INFO`/`WARNING`/`ERROR` (default `INFO`).
 
-Los scripts de línea de comandos (`bronze/civic_explorer.py`, `gold/civic_to_neo4j.py`,
+Los scripts de línea de comandos (todo `bronze/*_explorer.py`, `gold/*_to_neo4j.py`,
 `pipeline_etl.py`) siguen usando `print()` a propósito — son herramientas que corre un
 humano directamente, no logs de un servicio.
 
