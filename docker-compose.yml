@@ -61,6 +61,8 @@ services:
     volumes:
       - ./pharox_backend/data:/app/data
       - ./pharox_backend/app:/app/app
+    env_file:
+      - .env
     environment:
       - OLLAMA_HOST=http://ollama:11434
       - OLLAMA_MODEL=qwen3:8b

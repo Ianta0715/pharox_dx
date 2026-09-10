@@ -398,6 +398,136 @@ def _extraer_palabras_clave(texto: str) -> list[str]:
     return [t for t in crudo if len(t) >= 4 and t not in _STOPWORDS_CIVIC]
 
 
+_PATRONES_SUBTIPO_MOLECULAR = [
+    ("HER2_positivo", ["her2 positivo", "her2+", "her2 +", "her2-positivo"]),
+    ("Triple_negativo", ["triple negativo", "triple-negativo", "tnbc"]),
+    ("RH_positivo_HER2_negativo", ["luminal", "receptor hormonal positivo", "rh positivo", "hormonal positivo", "re+", "rp+"]),
+]
+
+
+def _detectar_subtipo_molecular(texto: str) -> str | None:
+    """
+    Detecta si la consulta menciona explicitamente un subtipo molecular de mama
+    reconocible, usando el mismo vocabulario de 4 categorias que RegistroTumor
+    y ProtocoloTratamiento (HER2_positivo / Triple_negativo /
+    RH_positivo_HER2_negativo). None si no hay mencion clara -- en ese caso
+    quien llama NO debe inventar un filtro, debe traer resultados sin filtrar
+    por subtipo.
+    """
+    texto_norm = _normalizar_texto_comparacion(texto or "")
+    for subtipo, patrones in _PATRONES_SUBTIPO_MOLECULAR:
+        if any(p in texto_norm for p in patrones):
+            return subtipo
+    return None
+
+
+def buscar_registros_tumores_mama(texto_consulta: str, n_results: int = 3) -> list[str]:
+    """
+    Busca registros reales de pacientes de cancer de mama (subgrafo
+    independiente :RegistroTumor, ver app/gold/registro_tumores_to_neo4j.py).
+
+    SIEMPRE filtra por topografia_codigo STARTS WITH 'C50': la planilla origen
+    (hoja "MAMA") trae 3 casos con codigo C44 (piel de mama, uno de ellos un
+    melanoma) que no son carcinoma de mama -- se excluyen aca en vez de
+    borrarlos del grafo, para no perder el dato real pero tampoco mezclarlo
+    con razonamiento de cancer de mama.
+
+    Si la consulta menciona un subtipo molecular reconocible, filtra ademas
+    por coincidencia EXACTA de subtipo_molecular (nunca por texto libre sobre
+    biomarcadores -- ver la nota en protocolos_tratamiento_to_neo4j.py sobre
+    por que CONTAINS de texto libre trajo resultados de otro perfil en las
+    pruebas iniciales).
+    """
+    contextos = []
+    g = get_graph()
+
+    subtipo = _detectar_subtipo_molecular(texto_consulta)
+
+    try:
+        cypher = """
+            MATCH (r:RegistroTumor)
+            WHERE r.topografia_codigo STARTS WITH 'C50'
+        """
+        params = {"n_results": n_results}
+        if subtipo:
+            cypher += " AND r.subtipo_molecular = $subtipo"
+            params["subtipo"] = subtipo
+        cypher += """
+            RETURN r.edad AS edad, r.lateralidad AS lateralidad,
+                   r.morfologia_nombre AS morfologia, r.grado_diferenciacion AS grado,
+                   r.estadio_clinico AS estadio_clinico, r.estadio_patologico AS estadio_patologico,
+                   r.subtipo_molecular AS subtipo, r.receptor_estrogeno AS re,
+                   r.receptor_progesterona AS rp, r.her2 AS her2, r.hospital AS hospital
+            LIMIT $n_results
+        """
+        res = g.query(cypher, params)
+
+        for record in res:
+            contexto = (
+                f"[REGISTRO REAL DE PACIENTE - {record.get('hospital') or '?'}] "
+                f"Edad {record.get('edad') or '?'} años, tumor {record.get('lateralidad') or '?'}, "
+                f"{record.get('morfologia') or '?'}, grado: {record.get('grado') or '?'}, "
+                f"estadio clínico {record.get('estadio_clinico') or '?'} / patológico {record.get('estadio_patologico') or 'sin estadificación patológica'}, "
+                f"subtipo molecular: {record.get('subtipo') or '?'} "
+                f"(RE:{record.get('re') or '?'} RP:{record.get('rp') or '?'} HER2:{record.get('her2') or '?'})"
+            )
+            contextos.append(contexto)
+            logger.info(f"[Registros Tumor Mama] Coincidencia encontrada: subtipo={record.get('subtipo')}")
+
+    except Exception as e:
+        logger.error(f"[Registros Tumor Mama] Error en búsqueda: {e}")
+
+    return contextos
+
+
+def buscar_protocolos_tratamiento_mama(texto_consulta: str, n_results: int = 2) -> list[str]:
+    """
+    Busca protocolos de tratamiento estandar de cancer de mama (subgrafo
+    independiente :ProtocoloTratamiento, ver
+    app/gold/protocolos_tratamiento_to_neo4j.py). Ya viene filtrado a mama
+    desde la ingesta; se repite el filtro por topografia aca como defensa
+    extra por si en el futuro se cargan protocolos de otros canceres bajo el
+    mismo label. Si la consulta menciona un subtipo molecular reconocible,
+    filtra por coincidencia EXACTA de subtipo_molecular_match.
+    """
+    contextos = []
+    g = get_graph()
+
+    subtipo = _detectar_subtipo_molecular(texto_consulta)
+
+    try:
+        cypher = """
+            MATCH (p:ProtocoloTratamiento)
+            WHERE p.topografia_codigo CONTAINS 'C50'
+        """
+        params = {"n_results": n_results}
+        if subtipo:
+            cypher += " AND p.subtipo_molecular_match = $subtipo"
+            params["subtipo"] = subtipo
+        cypher += """
+            RETURN p.histologia_subtipo AS histologia, p.biomarcadores_criticos AS biomarcadores,
+                   p.estadio_tnm AS estadio, p.intencion_linea AS intencion,
+                   p.protocolo_esquema AS esquema, p.modalidad AS modalidad
+            LIMIT $n_results
+        """
+        res = g.query(cypher, params)
+
+        for record in res:
+            contexto = (
+                f"[PROTOCOLO DE TRATAMIENTO ESTÁNDAR - Cáncer de Mama] {record.get('histologia') or '?'} | "
+                f"Biomarcadores: {record.get('biomarcadores') or '?'} | Estadio: {record.get('estadio') or '?'} | "
+                f"{record.get('intencion') or '?'} | Esquema: {record.get('esquema') or '?'} | "
+                f"Modalidad: {record.get('modalidad') or '?'}"
+            )
+            contextos.append(contexto)
+            logger.info(f"[Protocolos Tratamiento Mama] Coincidencia encontrada: {record.get('histologia')}")
+
+    except Exception as e:
+        logger.error(f"[Protocolos Tratamiento Mama] Error en búsqueda: {e}")
+
+    return contextos
+
+
 def buscar_evidencia_civic(texto_consulta: str, tipo_cancer: str = None, n_results: int = 3) -> list[str]:
     """
     Busca evidencia clínico-molecular en el subgrafo de conocimiento CIViC
@@ -639,6 +769,8 @@ def buscar_contexto_hibrido(query: str, tipo_cancer: str = None, n_results: int 
     5. Ensayos clínicos activos del subgrafo EnsayoClinico (ClinicalTrials.gov).
     6. Variantes clasificadas del subgrafo VarianteClinVar (ClinVar).
     7. Frecuencia de alteración por gen del subgrafo EstudioCBio (cBioPortal).
+    8. Registros reales de pacientes de mama del subgrafo RegistroTumor (Hospital Central - Mendoza).
+    9. Protocolos de tratamiento estándar de mama del subgrafo ProtocoloTratamiento.
     """
     contextos = []
     g = get_graph()
@@ -736,6 +868,24 @@ def buscar_contexto_hibrido(query: str, tipo_cancer: str = None, n_results: int 
             logger.info(f"[Híbrida] {len(frecuencias)} frecuencia(s) cBioPortal recuperada(s).")
     except Exception as e:
         logger.error(f"Error en búsqueda de frecuencia cBioPortal: {e}")
+
+    # 8. Búsqueda de Registros Reales de Pacientes de Mama (subgrafo RegistroTumor)
+    try:
+        registros = buscar_registros_tumores_mama(query, n_results=2)
+        if registros:
+            contextos.extend(registros)
+            logger.info(f"[Híbrida] {len(registros)} registro(s) real(es) de tumor recuperado(s).")
+    except Exception as e:
+        logger.error(f"Error en búsqueda de registros de tumores: {e}")
+
+    # 9. Búsqueda de Protocolos de Tratamiento Estándar (subgrafo ProtocoloTratamiento)
+    try:
+        protocolos = buscar_protocolos_tratamiento_mama(query, n_results=2)
+        if protocolos:
+            contextos.extend(protocolos)
+            logger.info(f"[Híbrida] {len(protocolos)} protocolo(s) de tratamiento recuperado(s).")
+    except Exception as e:
+        logger.error(f"Error en búsqueda de protocolos de tratamiento: {e}")
 
     return contextos
 

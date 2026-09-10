@@ -74,6 +74,16 @@ Motor de consultas (`app/main.py`, orquestado con LangChain LCEL):
 
 - Docker y Docker Compose
 - Una API key de [CIViC](https://civicdb.org) (Account Settings → API Key)
+- **Solo si vas a correr scripts fuera de Docker** (sección "Cargar conocimiento público" más
+  abajo): Python **3.10 a 3.12** (ver [.python-version](.python-version)). `requirements.txt`
+  fija versiones exactas de numpy/scipy que solo tienen wheel precompilado hasta Python 3.12 —
+  con una versión más nueva (ej. 3.13/3.14, la que trae por defecto Ubuntu 24.04+ en WSL) pip
+  intenta compilarlos desde código fuente y falla en cascada pidiendo gcc, gfortran, pkg-config,
+  libopenblas, etc. Si no querés lidiar con esto, corré los scripts **dentro del contenedor del
+  backend** en su lugar — ya tiene Python 3.10 con todo instalado:
+  ```bash
+  docker exec -it pharox_backend python -m app.gold.civic_to_neo4j
+  ```
 
 ## Setup
 
@@ -97,6 +107,11 @@ o actualizar una dependencia: editar [requirements.in](requirements.in) (rangos 
 regenerar el pin con el comando documentado en el encabezado de `requirements.txt` (usa
 `python:3.10-slim`, la misma base que el `Dockerfile`, para que las versiones resueltas sean
 las que realmente corren en producción).
+
+**Si `pip install -r requirements.txt` falla compilando numpy/scipy** (errores de meson pidiendo
+gcc, gfortran, pkg-config o OpenBLAS), es porque tu Python local es más nuevo que 3.12 y no hay
+wheel precompilado para esas versiones exactas — ver la nota en [Requisitos](#requisitos). Esto
+nunca pasa con `docker compose up --build` (usa Python 3.10 dentro del contenedor).
 
 ### Cargar conocimiento público (opcional, fuera de Docker)
 
