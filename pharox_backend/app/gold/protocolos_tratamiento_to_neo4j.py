@@ -74,10 +74,31 @@ def inicializar_esquema_protocolos():
         session.execute_write(crear_constraints)
 
 
+# El excel de origen fue exportado desde una herramienta que escribe las flechas
+# de secuencia como codigo LaTeX ("$\rightarrow$") en vez de como caracter. Sin
+# normalizarlo, el esquema AC-T y el de KEYNOTE-522 llegan al LLM con ese literal
+# adentro y salen citados asi en la respuesta clinica, que es lo que ve el medico.
+# Las claves van de la mas larga a la mas corta: "\to" es prefijo de "\rightarrow".
+_ARTEFACTOS_FORMULA = {
+    r"$\rightarrow$": "→",
+    r"$\to$": "→",
+    r"\rightarrow": "→",
+    r"\to": "→",
+}
+
+
+def _limpiar_artefactos_formula(texto: str) -> str:
+    """Reemplaza los escapes LaTeX de flecha por el caracter real y colapsa espacios."""
+    for crudo, limpio in _ARTEFACTOS_FORMULA.items():
+        texto = texto.replace(crudo, limpio)
+    # el reemplazo suele dejar espacios dobles alrededor de la flecha
+    return " ".join(texto.split())
+
+
 def _s(val) -> str | None:
     if val is None:
         return None
-    texto = str(val).strip()
+    texto = _limpiar_artefactos_formula(str(val).strip())
     return texto or None
 
 

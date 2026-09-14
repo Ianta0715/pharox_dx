@@ -113,6 +113,28 @@ def _entero(val) -> int | None:
         return None
 
 
+# Rango de edad plausible para un registro oncologico. Fuera de el, el valor no es
+# una edad real sino un centinela del origen: hay 12 filas con edad 0, una con 1 y
+# seis por encima de 110 (derivadas de fechas de nacimiento centinela), mientras
+# que todo el resto cae entre 24 y 89. Guardarlas como numero envenena cualquier
+# promedio o filtro por edad -- el avg() sobre las 216 filas da 50, cuando la media
+# real de los datos validos es 52. Se cargan como "sin dato", el mismo criterio que
+# VALORES_NULOS aplica a los campos de texto. La fila NO se descarta: el resto de
+# sus datos clinicos (subtipo, estadio, histologia) sigue siendo valido.
+EDAD_MINIMA_PLAUSIBLE = 15
+EDAD_MAXIMA_PLAUSIBLE = 110
+
+
+def _edad(val) -> int | None:
+    """Edad del paciente, o None si el valor cae fuera del rango plausible."""
+    edad = _entero(val)
+    if edad is None:
+        return None
+    if edad < EDAD_MINIMA_PLAUSIBLE or edad > EDAD_MAXIMA_PLAUSIBLE:
+        return None
+    return edad
+
+
 def derivar_subtipo_molecular(receptor_estrogeno: str | None, receptor_progesterona: str | None, her2: str | None) -> str:
     """
     Deriva el subtipo molecular SOLO cuando el dato lo sostiene sin ambiguedad.
@@ -138,7 +160,7 @@ def normalizar_fila(fila: dict, indice: int) -> dict:
 
     return {
         "id": f"RT_{indice:04d}",
-        "edad": _entero(fila.get("DGED")),
+        "edad": _edad(fila.get("DGED")),
         "sexo": _s(fila.get("PTESXN")),
         "topografia_codigo": _s(fila.get("TPGF")),
         "topografia_nombre": _s(fila.get("TPGFN")),
