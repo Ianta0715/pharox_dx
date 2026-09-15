@@ -18,6 +18,8 @@ from app.graph_db import (
     buscar_contexto_hibrido,
     obtener_estado_grafo,
     obtener_esquema_grafo,
+    listar_actualizaciones_protocolo,
+    obtener_elegibilidad_trials_paciente,
     get_graph
 )
 from app.ai_gateway import get_llm, DEFAULT_MODEL
@@ -134,6 +136,37 @@ class BuscarCasosResponse(BaseModel):
     casos_encontrados: int
     casos: list[str]
 
+class ActualizacionProtocolo(BaseModel):
+    id: str
+    titulo: str | None = None
+    resumen: str | None = None
+    sociedad: str | None = None
+    fuente: str | None = None
+    fecha_publicacion: str | None = None
+    subtipos_detectados: str | None = None
+    url: str | None = None
+
+class ActualizacionesProtocoloResponse(BaseModel):
+    success: bool
+    total: int
+    actualizaciones: list[ActualizacionProtocolo]
+
+class ElegibilidadTrial(BaseModel):
+    veredicto: str
+    nct_id: str | None = None
+    titulo: str | None = None
+    url: str | None = None
+    motivo: str | None = None
+    criterio_pendiente: str | None = None
+    regla: str | None = None
+    fecha_evaluacion: str | None = None
+
+class ElegibilidadPacienteResponse(BaseModel):
+    success: bool
+    paciente_id: str
+    total: int
+    ensayos: list[ElegibilidadTrial]
+
 @app.on_event("startup")
 def startup_event():
     try:
@@ -241,7 +274,7 @@ def log_schema_and_query_start(inputs):
     log_info("Generando consulta Cypher dinámica usando Few-Shot Prompting...")
     return inputs
 
-llm_cypher = get_llm(temperature=0.0)
+llm_cypher = get_llm(task="cypher", data_sensitive=True, temperature=0.0)
 
 cypher_chain = (
     RunnableLambda(log_schema_and_query_start)
@@ -383,8 +416,8 @@ CÓMO ESCRIBIR LA RESPUESTA — leela dos veces antes de responder:
 - Organizá el contenido por lo que le importa al médico (situación del paciente, qué encontró la
   base de datos, por qué), NUNCA por de qué tabla de la base de datos salió cada dato. Las etiquetas entre corchetes
   ("[EVIDENCIA CIViC]", "[REGISTRO REAL DE PACIENTE]", "[ENSAYO CLÍNICO]", "[PROTOCOLO DE
-  TRATAMIENTO ESTÁNDAR]", "[VARIANTE CLINVAR]", "[FRECUENCIA CBIOPORTAL]", "[CASO CLÍNICO REAL
-  SIMILAR]", etc.) son metadata interna para que vos sepas de dónde viene cada dato — NUNCA las
+  TRATAMIENTO ESTÁNDAR]", "[VARIANTE CLINVAR]", "[FRECUENCIA CBIOPORTAL]", "[ACTUALIZACIÓN DE
+  PROTOCOLO]", "[CASO CLÍNICO REAL SIMILAR]", etc.) son metadata interna para que vos sepas de dónde viene cada dato — NUNCA las
   repitas como títulos de sección ni las cites textualmente en la respuesta. En su lugar, atribuí
   la fuente de forma breve y natural entre paréntesis, por ejemplo: "(evidencia CIViC nivel A)",
   "(protocolo estándar del hospital)", "(2 pacientes similares en el registro del hospital)",
@@ -424,7 +457,7 @@ def log_sintesis_start(inputs):
     )
     return inputs
 
-llm_sintesis = get_llm(temperature=0.1)
+llm_sintesis = get_llm(task="sintesis", data_sensitive=True, temperature=0.1)
 
 sintesis_chain = (
     prompt_clinico
@@ -500,8 +533,57 @@ def ver_base_de_grafos():
         return {"success": True, "estado": datos}
     except Exception as e:
         raise HTTPException(
-            status_code=500, 
+            status_code=500,
             detail=f"Error al leer base de grafos: {repr(e)}"
+        )
+
+# -------------------------------------------------------------------------
+# VIGILANCIA DE PROTOCOLOS (Pharox_Documento_v5 §11 Capa 2)
+# -------------------------------------------------------------------------
+SUBTIPOS_MOLECULARES_VALIDOS = {"HER2_positivo", "Triple_negativo", "RH_positivo_HER2_negativo", "desconocido"}
+
+@app.get("/api/v1/protocolos/actualizaciones", dependencies=[Depends(verificar_api_key)], response_model=ActualizacionesProtocoloResponse)
+def ver_actualizaciones_protocolo(subtipo_molecular: Optional[str] = None, limit: int = 20):
+    """
+    Lista actualizaciones de guías/protocolos de cáncer de mama (ASCO/ESMO)
+    ingestadas por app/gold/vigilancia_protocolos_to_neo4j.py, más recientes
+    primero. Filtrar por `subtipo_molecular` para ver solo lo relevante al
+    perfil de un paciente activo (mismo vocabulario que RegistroTumor:
+    HER2_positivo, Triple_negativo, RH_positivo_HER2_negativo, desconocido).
+    """
+    if subtipo_molecular and subtipo_molecular not in SUBTIPOS_MOLECULARES_VALIDOS:
+        raise HTTPException(
+            status_code=422,
+            detail=f"subtipo_molecular inválido. Valores permitidos: {sorted(SUBTIPOS_MOLECULARES_VALIDOS)}"
+        )
+    try:
+        actualizaciones = listar_actualizaciones_protocolo(subtipo_molecular=subtipo_molecular, limit=limit)
+        return {"success": True, "total": len(actualizaciones), "actualizaciones": actualizaciones}
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al leer actualizaciones de protocolo: {repr(e)}"
+        )
+
+# -------------------------------------------------------------------------
+# ELEGIBILIDAD A ENSAYOS (Pharox_Documento_v5 §11 Capa 1 — estado persistido)
+# -------------------------------------------------------------------------
+@app.get("/api/v1/pacientes/{paciente_id}/elegibilidad_trials", dependencies=[Depends(verificar_api_key)], response_model=ElegibilidadPacienteResponse)
+def ver_elegibilidad_trials(paciente_id: str):
+    """
+    Lee el estado de elegibilidad a ensayos YA CALCULADO para un paciente
+    (:RegistroTumor) por app/gold/reglas_elegibilidad_trials.py. A diferencia
+    de /api/v1/consultar, esto no invoca al LLM ni recalcula nada: es lectura
+    directa de las relaciones HABILITA_TRIAL/CONDICIONA_TRIAL/EXCLUYE_TRIAL
+    persistidas en el grafo, por eso es instantáneo.
+    """
+    try:
+        ensayos = obtener_elegibilidad_trials_paciente(paciente_id)
+        return {"success": True, "paciente_id": paciente_id, "total": len(ensayos), "ensayos": ensayos}
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al leer elegibilidad de ensayos: {repr(e)}"
         )
 
 # -------------------------------------------------------------------------

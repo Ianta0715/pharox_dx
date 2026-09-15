@@ -35,9 +35,14 @@ SALIDA_DIR = os.path.join(
 
 # Subconjunto de campos que necesitamos (evita traer el registro completo, que
 # incluye modulos de resultados/referencias mucho mas pesados que no usamos hoy).
+# Los campos de elegibilidad (EligibilityCriteria/Sex/MinimumAge/MaximumAge/
+# HealthyVolunteers) alimentan la capa de reglas de elegibilidad -- ver
+# app/gold/reglas_elegibilidad_trials.py. "StdAges" NO es un nombre de campo
+# valido para la API (probado en vivo contra /api/v2/studies), por eso no esta.
 CAMPOS = ",".join([
     "NCTId", "BriefTitle", "OverallStatus", "Phase", "Condition",
     "InterventionName", "LeadSponsorName", "BriefSummary", "LocationCountry",
+    "EligibilityCriteria", "Sex", "MinimumAge", "MaximumAge", "HealthyVolunteers",
 ])
 
 PAGE_SIZE = 200

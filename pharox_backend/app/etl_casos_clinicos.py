@@ -165,7 +165,7 @@ def extraer_estructura_con_llm(texto: str) -> dict:
     Usa el LLM para extraer información estructurada del texto libre del informe.
     Devuelve un diccionario con el esquema del caso clínico.
     """
-    llm = get_llm(temperature=0.0)
+    llm = get_llm(task="extraccion", data_sensitive=True, temperature=0.0)
     prompt_final = EXTRACTION_PROMPT.format(texto=texto)
 
     logger.info("[ETL] Extrayendo estructura del informe con LLM...")

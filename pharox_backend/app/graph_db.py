@@ -198,81 +198,32 @@ def inicializar_esquema(tx):
     """)
 
 def inicializar_db():
-    """Inicializa el esquema e ingesta la literatura y los historiales en Neo4j."""
+    """Inicializa el esquema e ingesta los historiales clínicos sintéticos en Neo4j."""
     logger.info("Inicializando base de datos de grafos Neo4j...")
-    
+
     # 1. Crear esquema
     with driver.session() as session:
         session.execute_write(inicializar_esquema)
-        
-    # Verificar si ya existen nodos de Literatura para no duplicar
+
+    # Literatura real (:Literatura) NO se siembra acá -- la única fuente es
+    # app/gold/europepmc_to_neo4j.py (PMIDs reales, filtrado a mama). Hubo una
+    # semilla sintética (data_oncologica.json, 16 fichas sin cita real, ni
+    # siquiera todas de mama) que se sacó a propósito: no aportaba evidencia
+    # utilizable y podía aparecer en la búsqueda vectorial antes del filtro de
+    # tipo_cancer. Si tu Neo4j local todavía tiene esos nodos de una corrida
+    # vieja, limpialos con:
+    #   MATCH (n:Literatura) WHERE n.id STARTS WITH 'lit_' DETACH DELETE n
+
     with driver.session() as session:
-        result = session.run("MATCH (n:Literatura) RETURN count(n) AS cnt")
-        lit_count = result.single()["cnt"]
-        
         result_gold = session.run("MATCH (p:Paciente) RETURN count(p) AS cnt")
         paciente_count = result_gold.single()["cnt"]
-        
-    path_lit = buscar_archivo("data_oncologica.json")
+
     path_gold = buscar_archivo("dataset_estructurado_seguro.json", ["gold"])
     if not path_gold:
         for rpath in ["dataset_estructurado_seguro.json", "../dataset_estructurado_seguro.json"]:
             if os.path.exists(rpath):
                 path_gold = rpath
                 break
-
-    # Ingestar literatura si está vacía
-    if lit_count == 0 and path_lit:
-        logger.info(f"Cargando literatura en Neo4j desde {path_lit}...")
-        try:
-            with open(path_lit, "r", encoding="utf-8") as f:
-                data_lit = json.load(f)
-                
-            with driver.session() as session:
-                for idx, item in enumerate(data_lit):
-                    tipo_cancer = item.get("tipo_cancer", "No Especificado")
-                    categoria = item.get("categoria", "General")
-                    drogas = item.get("agente_drogas", "")
-                    mutacion = item.get("mutacion_biomarcador", "")
-                    linea = item.get("linea_de_tratamiento", "")
-                    resultado = item.get("resultado_clave", "")
-                    toxicidad = item.get("toxicidad_limitante_dosis", "")
-                    resistencia = item.get("resistencia_adquirida", "")
-                    fuente = item.get("fuente_estudio", "Desconocida")
-                    
-                    texto = (
-                        f"Cáncer: {tipo_cancer} | Categoría: {categoria} | "
-                        f"Drogas/Agentes: {drogas} | Mutación/Biomarcador: {mutacion} | "
-                        f"Línea de tratamiento: {linea} | Resultado Clave: {resultado} | "
-                        f"Toxicidad limitante: {toxicidad} | Resistencia: {resistencia} | "
-                        f"Fuente: {fuente}"
-                    )
-                    
-                    logger.info(f"   Generating embedding for lit_{idx}...")
-                    vector = generar_embedding(texto)
-                    
-                    session.run("""
-                        CREATE (l:Literatura {
-                            id: $id,
-                            text: $text,
-                            tipo_cancer: $tipo_cancer,
-                            categoria: $categoria,
-                            drogas: $drogas,
-                            embedding: $embedding
-                        })
-                    """, {
-                        "id": f"lit_{idx}",
-                        "text": texto,
-                        "tipo_cancer": tipo_cancer,
-                        "categoria": categoria,
-                        "drogas": drogas,
-                        "embedding": vector
-                    })
-            logger.info("Literatura ingesta en Neo4j de forma correcta.")
-        except Exception as e:
-            logger.error(f"Error al ingestar literatura en Neo4j: {e}")
-    else:
-        logger.info(f"Omitiendo ingesta de literatura. Ya contiene {lit_count} registros.")
 
     # Ingestar historial clínico (Capa Gold) si está vacío
     if paciente_count == 0 and path_gold:
@@ -528,6 +479,98 @@ def buscar_protocolos_tratamiento_mama(texto_consulta: str, n_results: int = 2) 
     return contextos
 
 
+def buscar_actualizaciones_protocolo(texto_consulta: str, n_results: int = 2) -> list[str]:
+    """
+    Busca actualizaciones recientes de guias/protocolos de cancer de mama
+    (subgrafo independiente :ActualizacionProtocolo, ver
+    app/gold/vigilancia_protocolos_to_neo4j.py) relevantes a la consulta.
+
+    Si la consulta menciona un subtipo molecular reconocible, prioriza
+    actualizaciones cuyo subtipos_detectados lo incluya (coincidencia exacta
+    de token dentro de la lista comma-joined, nunca CONTAINS de texto libre).
+    Si no hay subtipo reconocible en la consulta, trae las mas recientes sin
+    filtrar -- el objetivo de vigilancia es que el medico vea que algo cambio
+    aunque no lo haya preguntado explicitamente.
+    """
+    contextos = []
+    g = get_graph()
+
+    subtipo = _detectar_subtipo_molecular(texto_consulta)
+
+    try:
+        cypher = "MATCH (a:ActualizacionProtocolo)"
+        params = {"n_results": n_results}
+        if subtipo:
+            cypher += " WHERE a.subtipos_detectados CONTAINS $subtipo"
+            params["subtipo"] = subtipo
+        cypher += """
+            RETURN a.titulo AS titulo, a.resumen AS resumen, a.sociedad AS sociedad,
+                   a.fuente AS fuente, a.fecha_publicacion AS fecha, a.subtipos_detectados AS subtipos,
+                   a.url AS url
+            ORDER BY a.fecha_publicacion DESC
+            LIMIT $n_results
+        """
+        res = g.query(cypher, params)
+
+        for record in res:
+            contexto = (
+                f"[ACTUALIZACIÓN DE PROTOCOLO - {record.get('sociedad') or '?'}, {record.get('fecha') or 'fecha desconocida'}] "
+                f"{record.get('titulo') or '?'} (subtipos: {record.get('subtipos') or 'desconocido'}) "
+                f"— {record.get('resumen') or 'sin resumen'} ({record.get('url') or record.get('fuente') or '?'})"
+            )
+            contextos.append(contexto)
+            logger.info(f"[Vigilancia Protocolos] Coincidencia encontrada: {record.get('titulo')}")
+
+    except Exception as e:
+        logger.error(f"[Vigilancia Protocolos] Error en búsqueda: {e}")
+
+    return contextos
+
+
+def listar_actualizaciones_protocolo(subtipo_molecular: str | None = None, limit: int = 20) -> list[dict]:
+    """
+    Lista actualizaciones de protocolo para el endpoint dedicado de vigilancia
+    (/api/v1/protocolos/actualizaciones) -- a diferencia de
+    buscar_actualizaciones_protocolo (pensada para enriquecer una consulta
+    puntual del medico), esta funcion devuelve los campos estructurados
+    completos, no un string armado para el LLM.
+    """
+    g = get_graph()
+    cypher = "MATCH (a:ActualizacionProtocolo)"
+    params = {"limit": limit}
+    if subtipo_molecular:
+        cypher += " WHERE a.subtipos_detectados CONTAINS $subtipo_molecular"
+        params["subtipo_molecular"] = subtipo_molecular
+    cypher += """
+        RETURN a.id AS id, a.titulo AS titulo, a.resumen AS resumen, a.sociedad AS sociedad,
+               a.fuente AS fuente, a.fecha_publicacion AS fecha_publicacion,
+               a.subtipos_detectados AS subtipos_detectados, a.url AS url
+        ORDER BY a.fecha_publicacion DESC
+        LIMIT $limit
+    """
+    return g.query(cypher, params)
+
+
+def obtener_elegibilidad_trials_paciente(paciente_id: str) -> list[dict]:
+    """
+    Lee las relaciones de elegibilidad a ensayos PERSISTIDAS para un paciente
+    (:RegistroTumor)-[:HABILITA_TRIAL|CONDICIONA_TRIAL|EXCLUYE_TRIAL]->(:EnsayoClinico),
+    creadas por app/gold/reglas_elegibilidad_trials.py -- a diferencia de
+    buscar_ensayos_clinicos (que re-evalúa desde cero en cada consulta), esto
+    es una simple lectura de estado ya calculado, instantánea.
+    """
+    g = get_graph()
+    cypher = """
+        MATCH (p:RegistroTumor {id: $paciente_id})-[r]->(e:EnsayoClinico)
+        WHERE type(r) IN ['HABILITA_TRIAL', 'CONDICIONA_TRIAL', 'EXCLUYE_TRIAL']
+        RETURN type(r) AS veredicto, e.nct_id AS nct_id, e.titulo AS titulo, e.url AS url,
+               r.motivo AS motivo, r.criterio_pendiente AS criterio_pendiente,
+               r.regla AS regla, r.fecha_evaluacion AS fecha_evaluacion
+        ORDER BY r.fecha_evaluacion DESC
+    """
+    return g.query(cypher, {"paciente_id": paciente_id})
+
+
 def buscar_evidencia_civic(texto_consulta: str, tipo_cancer: str = None, n_results: int = 3) -> list[str]:
     """
     Busca evidencia clínico-molecular en el subgrafo de conocimiento CIViC
@@ -771,6 +814,7 @@ def buscar_contexto_hibrido(query: str, tipo_cancer: str = None, n_results: int 
     7. Frecuencia de alteración por gen del subgrafo EstudioCBio (cBioPortal).
     8. Registros reales de pacientes de mama del subgrafo RegistroTumor (Hospital Central - Mendoza).
     9. Protocolos de tratamiento estándar de mama del subgrafo ProtocoloTratamiento.
+    10. Actualizaciones recientes de guías/protocolos (ASCO/ESMO) del subgrafo ActualizacionProtocolo.
     """
     contextos = []
     g = get_graph()
@@ -886,6 +930,15 @@ def buscar_contexto_hibrido(query: str, tipo_cancer: str = None, n_results: int 
             logger.info(f"[Híbrida] {len(protocolos)} protocolo(s) de tratamiento recuperado(s).")
     except Exception as e:
         logger.error(f"Error en búsqueda de protocolos de tratamiento: {e}")
+
+    # 10. Búsqueda de Actualizaciones de Protocolo (subgrafo ActualizacionProtocolo)
+    try:
+        actualizaciones = buscar_actualizaciones_protocolo(query, n_results=2)
+        if actualizaciones:
+            contextos.extend(actualizaciones)
+            logger.info(f"[Híbrida] {len(actualizaciones)} actualización(es) de protocolo recuperada(s).")
+    except Exception as e:
+        logger.error(f"Error en búsqueda de actualizaciones de protocolo: {e}")
 
     return contextos
 

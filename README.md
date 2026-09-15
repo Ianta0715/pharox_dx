@@ -9,7 +9,11 @@ sintetizando la evidencia recuperada.
 ## Arquitectura
 
 El grafo de Neo4j combina varios subgrafos independientes entre sí (no hay relaciones directas
-entre ellos — ver la nota de independencia en `app/graph_db.py`) más el subgrafo clínico:
+entre ellos — ver la nota de independencia en `app/graph_db.py`) más el subgrafo clínico. La
+única excepción deliberada es la relación `RegistroTumor -> EnsayoClinico` que crea
+`app/gold/reglas_elegibilidad_trials.py` (ver más abajo): para todo lo demás, exploratorio y
+heterogéneo, el cruce sigue siendo en tiempo de consulta; para elegibilidad a ensayos — estado de
+alto valor que se vuelve a consultar y necesita quedar auditado — se persiste como relación real.
 
 ```
 CIViC (conocimiento científico público)
@@ -19,7 +23,10 @@ CIViC (conocimiento científico público)
   (Evidencia)-[:RESPALDADA_POR]->(Fuente)
 
 ClinicalTrials.gov (ensayos clínicos activos)
-  (EnsayoClinico {condiciones, intervenciones, fase, estado, ...})  — nodo plano, sin relaciones
+  (EnsayoClinico {condiciones, intervenciones, fase, estado, criterios_elegibilidad,
+                  sexo, edad_minima_anios, edad_maxima_anios, subtipos_relacionados, ...})
+  (RegistroTumor)-[:HABILITA_TRIAL | :CONDICIONA_TRIAL | :EXCLUYE_TRIAL]->(EnsayoClinico)
+    — única relación cruzada entre subgrafos, ver app/gold/reglas_elegibilidad_trials.py
 
 ClinVar (variantes clasificadas clínicamente, con HGVS/coordenadas que CIViC no expone)
   (VarianteClinVar)-[:ASOCIADA_A_CONDICION]->(CondicionClinVar)
@@ -34,8 +41,12 @@ Clínico (pacientes anonimizados)
   (Paciente)-[:TIENE_ANTECEDENTE]->(AntecedenteMedico)
 ```
 
-`Literatura` (búsqueda vectorial, ver más abajo) no es un subgrafo propio: es una etiqueta que ya
-existía para literatura sintética de ejemplo, y que Europe PMC repuebla con artículos reales.
+`Literatura` (búsqueda vectorial, ver más abajo) no es un subgrafo propio, es una etiqueta plana
+que solo se puebla vía `app/gold/europepmc_to_neo4j.py` (PMIDs reales de Europe PMC, filtrado a
+mama) — sin correr ese script, `:Literatura` está vacía. Hubo una semilla sintética
+(`data_oncologica.json`, 16 fichas sin cita real, la mayoría ni siquiera de mama) que se sacó a
+propósito por no aportar evidencia utilizable; si tu Neo4j local la tiene de una corrida vieja,
+limpiala con `MATCH (n:Literatura) WHERE n.id STARTS WITH 'lit_' DETACH DELETE n`.
 
 Pipelines de ingesta (arquitectura medallion, capas bronze/silver/gold). Las cinco fuentes
 públicas siguen el mismo patrón: `app/bronze/<fuente>_explorer.py` (consulta la API pública,
@@ -51,11 +62,42 @@ filtra a cáncer de mama) → `app/gold/<fuente>_to_neo4j.py` (normaliza e inges
   `app/gold/cbioportal_to_neo4j.py`.
 - **Europe PMC**: `app/bronze/europepmc_explorer.py` (REST público, sin auth) →
   `app/gold/europepmc_to_neo4j.py` (requiere Ollama levantado: genera embeddings).
+- **Vigilancia de protocolos** (ASCO/ESMO, Pharox_Documento_v5 §11 Capa 2):
+  `app/bronze/vigilancia_protocolos_explorer.py` (Europe PMC filtrado a guías/consensos de
+  mama, sin auth) → `app/gold/vigilancia_protocolos_to_neo4j.py`. Pensada para correrse
+  periódicamente (cron o manual) y detectar actualizaciones de guías relevantes para el
+  perfil molecular de casos activos. NCCN no tiene API pública ni se indexa en Europe PMC
+  (guías vivas, no papers), así que no está cubierto todavía.
 - **Pacientes (FHIR sintético)**: `app/pipeline_etl.py` anonimiza (SHA-256 + salt) y estructura
   el dataset en capas silver/gold → `graph_db.py` lo ingesta en Neo4j al arrancar el backend.
 - **Casos clínicos reales**: `app/etl_casos_clinicos.py` — recibe texto u OCR de un informe,
   extrae estructura vía LLM y lo ingesta anonimizado (hash SHA-256 del contenido clínico, sin
   nombre ni fecha exacta).
+
+**Elegibilidad a ensayos** (Pharox_Documento_v5 §11 Capa 1, estado persistente):
+`app/gold/reglas_elegibilidad_trials.py` — a diferencia de todo lo anterior, no ingesta una
+fuente nueva: lee `RegistroTumor` (pacientes de mama) y `EnsayoClinico` (ya ingeridos) y escribe
+la relación de elegibilidad entre ambos. Dos pasos:
+
+1. **Determinístico** (`evaluar_criterios_deterministicos`, siempre corre, sin LLM): descarta por
+   estado de reclutamiento, sexo, rango etario o subtipo molecular. Nunca concluye `HABILITA` —
+   con los campos estructurados disponibles solo se puede descartar con confianza, no confirmar
+   elegibilidad completa. Resultado: `EXCLUYE` o `CONDICIONA`.
+2. **Semántico** (`evaluar_criterio_semantico`, opcional, flag `--con-llm`): solo sobre los pares
+   que quedaron en `CONDICIONA`. Lee el texto real de `criterios_elegibilidad` contra el perfil
+   completo (incluye ECOG) y puede confirmar `HABILITA`, mantener `CONDICIONA` (nombrando qué
+   falta) o bajar a `EXCLUYE`. Requiere Ollama levantado.
+
+El veredicto se persiste como relación (`HABILITA_TRIAL`/`CONDICIONA_TRIAL`/`EXCLUYE_TRIAL`) con
+`motivo`, `regla` y `fecha_evaluacion` como propiedades — instantáneo y auditable de ahí en más,
+sin recalcular en cada consulta. Reevaluar un par borra el veredicto anterior entre ese paciente y
+ese ensayo antes de escribir el nuevo (nunca coexisten dos veredictos para el mismo par).
+
+```bash
+python -m app.gold.reglas_elegibilidad_trials                 # todos los pacientes x ensayos, solo determinístico
+python -m app.gold.reglas_elegibilidad_trials 10 20            # 10 pacientes x 20 ensayos (prueba rápida)
+python -m app.gold.reglas_elegibilidad_trials 10 20 --con-llm  # + paso semántico (requiere Ollama)
+```
 
 Motor de consultas (`app/main.py`, orquestado con LangChain LCEL):
 
@@ -139,6 +181,10 @@ python -m app.gold.cbioportal_to_neo4j
 # Europe PMC (sin auth, pero el gold necesita Ollama levantado para los embeddings)
 python -m app.bronze.europepmc_explorer
 python -m app.gold.europepmc_to_neo4j
+
+# Vigilancia de protocolos ASCO/ESMO (sin auth; sin Ollama, no genera embeddings)
+python -m app.bronze.vigilancia_protocolos_explorer        # últimos 180 días por defecto
+python -m app.gold.vigilancia_protocolos_to_neo4j
 ```
 
 ## Endpoints principales
@@ -152,6 +198,8 @@ Todos los endpoints salvo `/` requieren el header `X-API-Key` con el valor de `P
 | `/api/v1/casos/ingestar` | POST | Ingesta un caso clínico real (texto y/o imagen de informe) |
 | `/api/v1/casos/ingestar_texto` | POST | Ingesta un caso clínico real (solo texto) |
 | `/api/v1/casos/buscar` | GET | Busca casos clínicos reales similares por texto |
+| `/api/v1/protocolos/actualizaciones` | GET | Lista actualizaciones de guías ASCO/ESMO, filtrable por `subtipo_molecular` |
+| `/api/v1/pacientes/{paciente_id}/elegibilidad_trials` | GET | Elegibilidad a ensayos ya calculada para un paciente (`RegistroTumor.id`), lectura instantánea |
 | `/api/v1/debug/graph_db` | GET | Estado del grafo (conteos de nodos/relaciones) |
 
 ```bash
