@@ -38,6 +38,17 @@ Sin ID natural en el origen: se usa un id sintetico por posicion de fila
 Se descarta la columna "Mapping FHIR" (metadata tecnica de interoperabilidad,
 no aporta a la busqueda clinica).
 
+Las 4 filas de mama de "Protocolo / Esquema Estandar" fueron completadas a mano
+en el excel (2026-09-16) con la fase posterior a la cirugia y la duracion de
+cada esquema -- la version original solo traia el nombre corto del regimen
+(p. ej. "KEYNOTE-522: Pembrolizumab + Carboplatino + Paclitaxel -> Doxorrubicina
++ Ciclofosfamida"), sin la fase adyuvante de pembrolizumab en monoterapia. Sin
+ese dato, el copiloto no tenia como responder que pasa despues de la cirugia
+aunque se le pidiera explicitamente, y en una prueba real llego a citar el
+esquema con las fases en el orden invertido. El contenido agregado es
+conocimiento publico bien establecido de regimenes ya aprobados (KEYNOTE-522,
+TCHP/KATHERINE, CDK4/6i, AC-T) -- no es una decision clinica nueva de Pharox.
+
 Uso:
     python -m app.gold.protocolos_tratamiento_to_neo4j
     python -m app.gold.protocolos_tratamiento_to_neo4j "data/otro_archivo.xlsx"

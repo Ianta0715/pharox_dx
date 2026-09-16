@@ -1,5 +1,6 @@
 import os
 import json
+import re
 import unicodedata
 from neo4j import GraphDatabase
 from langchain_neo4j import Neo4jGraph
@@ -355,21 +356,113 @@ _PATRONES_SUBTIPO_MOLECULAR = [
     ("RH_positivo_HER2_negativo", ["luminal", "receptor hormonal positivo", "rh positivo", "hormonal positivo", "re+", "rp+"]),
 ]
 
+# Patrones para leer RE/RP/HER2 como el médico realmente los escribe en una
+# nota clínica (porcentaje o score de IHQ/FISH), no como una frase armada.
+_PATRON_RECEPTOR_PORCENTAJE = r"\b{sigla}\b\D{{0,10}}?(\d{{1,3}})\s*%"
+_PATRON_HER2_IHQ = r"\bher-?2\b(?:\s*(?:ihq|ihc|por\s+inmunohistoqu[ií]mica))?\D{0,10}?([0-3])\s*\+"
+_PATRON_HER2_FISH_POSITIVO = r"\bher-?2\b.{0,20}?fish.{0,15}?(?:positiv|amplific)"
 
-def _detectar_subtipo_molecular(texto: str) -> str | None:
+
+def _extraer_valor_receptor(texto: str, sigla_regex: str) -> int | None:
+    m = re.search(_PATRON_RECEPTOR_PORCENTAJE.format(sigla=sigla_regex), texto, re.IGNORECASE)
+    return int(m.group(1)) if m else None
+
+
+def _inferir_subtipo_de_valores_numericos(texto: str) -> str | None:
     """
-    Detecta si la consulta menciona explicitamente un subtipo molecular de mama
-    reconocible, usando el mismo vocabulario de 4 categorias que RegistroTumor
-    y ProtocoloTratamiento (HER2_positivo / Triple_negativo /
-    RH_positivo_HER2_negativo). None si no hay mencion clara -- en ese caso
-    quien llama NO debe inventar un filtro, debe traer resultados sin filtrar
-    por subtipo.
+    Deriva el subtipo molecular a partir de los valores estructurados que trae
+    una nota clínica real -- "RE 0%", "HER2 IHQ 1+" -- en vez de depender de
+    que alguien escriba la frase "triple negativo". Mismo criterio de
+    clasificacion que derivar_subtipo_molecular() en
+    app/gold/registro_tumores_to_neo4j.py, adaptado a texto libre en vez de
+    columnas de excel: positivo si RE/RP >= 1% (convencion ASCO/CAP), HER2
+    positivo si IHQ 3+ o FISH amplificado. IHQ 2+ sin FISH queda equivoco a
+    proposito -- no se fuerza una clasificacion que el dato no sostiene, igual
+    que el front trata "Equivocal" como su propio estado.
+
+    Nacio de un caso real que se clasifico mal: el texto solo traia "RE 0%,
+    RP 0%, HER2 IHQ 1+" (nunca la palabra "triple negativo"), y sin esto la
+    deteccion por frase no encontraba nada -- ninguna busqueda se filtraba por
+    subtipo y el sistema terminaba citando protocolos y ensayos de otros
+    perfiles moleculares.
+    """
+    re_valor = _extraer_valor_receptor(texto, "re")
+    rp_valor = _extraer_valor_receptor(texto, "rp")
+    her2_match = re.search(_PATRON_HER2_IHQ, texto, re.IGNORECASE)
+    her2_ihq = int(her2_match.group(1)) if her2_match else None
+    her2_fish_positivo = bool(re.search(_PATRON_HER2_FISH_POSITIVO, texto, re.IGNORECASE))
+
+    if her2_ihq is None and not her2_fish_positivo:
+        return None  # sin HER2 no se puede descartar HER2_positivo con confianza
+
+    her2_positivo = her2_fish_positivo or (her2_ihq is not None and her2_ihq == 3)
+    her2_negativo = her2_ihq is not None and her2_ihq <= 1
+    her2_equivoco = her2_ihq == 2 and not her2_fish_positivo
+
+    if her2_positivo:
+        return "HER2_positivo"
+    if her2_equivoco:
+        return None  # HER2 sin determinar: no es HER2 negativo, no inventar
+    if not her2_negativo:
+        return None
+
+    if re_valor is None or rp_valor is None:
+        return None  # HER2 negativo pero RE/RP no informados: no alcanza
+
+    if re_valor < 1 and rp_valor < 1:
+        return "Triple_negativo"
+    return "RH_positivo_HER2_negativo"
+
+
+def detectar_subtipo_molecular(texto: str) -> str | None:
+    """
+    Detecta el subtipo molecular de mama de un texto libre, usando el mismo
+    vocabulario de 4 categorias que RegistroTumor y ProtocoloTratamiento
+    (HER2_positivo / Triple_negativo / RH_positivo_HER2_negativo). Primero
+    intenta la frase explicita ("triple negativo"); si no hay ninguna,
+    intenta derivarlo de los valores numericos de RE/RP/HER2 si estan
+    presentes. None si ninguno de los dos caminos encuentra nada -- en ese
+    caso quien llama NO debe inventar un filtro, debe traer resultados sin
+    filtrar por subtipo.
+
+    Publica (sin "_" inicial) porque además de usarla las funciones de
+    búsqueda de este módulo, app/main.py la necesita para que el paso de
+    Text-to-Cypher tenga el subtipo ya resuelto en vez de tener que inferirlo
+    él mismo de los porcentajes crudos.
     """
     texto_norm = _normalizar_texto_comparacion(texto or "")
     for subtipo, patrones in _PATRONES_SUBTIPO_MOLECULAR:
         if any(p in texto_norm for p in patrones):
             return subtipo
-    return None
+    return _inferir_subtipo_de_valores_numericos(texto or "")
+
+
+# Siglas clínicas de uso habitual en español que colisionan con símbolos de
+# genes reales si se buscan por coincidencia de subcadena -- nació de un bug
+# real: "PAAF" (punción-aspiración con aguja fina) matcheaba por CONTAINS
+# contra el gen real PAAF1, y el sistema citaba datos genómicos irrelevantes.
+_ABREVIATURAS_CLINICAS_EXCLUIDAS = {
+    "PAAF", "IHQ", "IHC", "ECOG", "TNM", "RMN", "TAC", "PET", "FISH", "ASCO",
+    "ESMO", "NCCN", "AJCC", "OMS", "RE", "RP", "CSE", "CSI", "CII", "CIE",
+}
+
+
+def _extraer_genes_mencionados(texto: str) -> list[str]:
+    """
+    Extrae tokens con forma de símbolo génico (mayúsculas, 2-10 caracteres,
+    puede llevar dígitos) del texto ORIGINAL -- a diferencia de
+    _extraer_palabras_clave, no baja a minúsculas: la mayúscula es la señal
+    de que es un símbolo (BRCA1, TP53, ERBB2), no una palabra común. Se usa
+    para matchear genes por IGUALDAD exacta contra hugo_symbol/gen en vez de
+    CONTAINS de subcadena -- ver _ABREVIATURAS_CLINICAS_EXCLUIDAS.
+    """
+    if not texto:
+        return []
+    vistos: list[str] = []
+    for token in re.findall(r"\b[A-Z][A-Z0-9]{1,9}\b", texto):
+        if token not in _ABREVIATURAS_CLINICAS_EXCLUIDAS and token not in vistos:
+            vistos.append(token)
+    return vistos
 
 
 def buscar_registros_tumores_mama(texto_consulta: str, n_results: int = 3) -> list[str]:
@@ -392,7 +485,7 @@ def buscar_registros_tumores_mama(texto_consulta: str, n_results: int = 3) -> li
     contextos = []
     g = get_graph()
 
-    subtipo = _detectar_subtipo_molecular(texto_consulta)
+    subtipo = detectar_subtipo_molecular(texto_consulta)
 
     try:
         cypher = """
@@ -444,7 +537,7 @@ def buscar_protocolos_tratamiento_mama(texto_consulta: str, n_results: int = 2) 
     contextos = []
     g = get_graph()
 
-    subtipo = _detectar_subtipo_molecular(texto_consulta)
+    subtipo = detectar_subtipo_molecular(texto_consulta)
 
     try:
         cypher = """
@@ -495,7 +588,7 @@ def buscar_actualizaciones_protocolo(texto_consulta: str, n_results: int = 2) ->
     contextos = []
     g = get_graph()
 
-    subtipo = _detectar_subtipo_molecular(texto_consulta)
+    subtipo = detectar_subtipo_molecular(texto_consulta)
 
     try:
         cypher = "MATCH (a:ActualizacionProtocolo)"
@@ -551,6 +644,125 @@ def listar_actualizaciones_protocolo(subtipo_molecular: str | None = None, limit
     return g.query(cypher, params)
 
 
+def listar_registros_tumor(subtipo_molecular: str | None = None, limit: int = 50) -> list[dict]:
+    """
+    Lista pacientes reales (:RegistroTumor) del registro del Hospital Central
+    Mendoza -- necesario para que el front pueda ofrecer un selector de
+    pacientes reales sin conocer de antemano los ids RT_XXXX. Filtra a mama
+    (topografia C50) igual que app/gold/reglas_elegibilidad_trials.py, ya que
+    es el unico subconjunto para el que hay elegibilidad a ensayos calculada.
+    """
+    g = get_graph()
+    cypher = "MATCH (r:RegistroTumor) WHERE r.topografia_codigo STARTS WITH 'C50'"
+    params = {"limit": limit}
+    if subtipo_molecular:
+        cypher += " AND r.subtipo_molecular = $subtipo_molecular"
+        params["subtipo_molecular"] = subtipo_molecular
+    cypher += """
+        RETURN r.id AS id, r.edad AS edad, r.topografia_nombre AS topografia_nombre,
+               r.estadio_clinico AS estadio_clinico, r.subtipo_molecular AS subtipo_molecular,
+               r.receptor_estrogeno AS receptor_estrogeno, r.receptor_progesterona AS receptor_progesterona,
+               r.her2 AS her2, r.hospital AS hospital, r.fecha_diagnostico AS fecha_diagnostico
+        ORDER BY r.id
+        LIMIT $limit
+    """
+    return g.query(cypher, params)
+
+
+def obtener_subtipo_molecular_registro(paciente_id: str) -> str | None:
+    """
+    Lee solo el subtipo_molecular de un :RegistroTumor por id -- usado para
+    cruzar contra ProtocoloTratamiento sin traer el registro completo.
+    Devuelve None si el paciente no existe (a diferencia de "desconocido",
+    que es un subtipo real cuando el dato está pero no es concluyente).
+    """
+    g = get_graph()
+    resultado = g.query(
+        "MATCH (r:RegistroTumor {id: $paciente_id}) RETURN r.subtipo_molecular AS subtipo_molecular",
+        {"paciente_id": paciente_id},
+    )
+    if not resultado:
+        return None
+    return resultado[0]["subtipo_molecular"] or "desconocido"
+
+
+def protocolo_estandar_por_subtipo(subtipo_molecular: str) -> list[dict]:
+    """
+    Cruza un subtipo molecular (vocabulario de RegistroTumor.subtipo_molecular)
+    contra el subgrafo independiente :ProtocoloTratamiento (ver
+    app/gold/protocolos_tratamiento_to_neo4j.py) por coincidencia EXACTA de
+    subtipo_molecular_match -- a diferencia de buscar_protocolos_tratamiento_mama
+    (pensada para texto libre de una consulta), acá el subtipo ya es un dato
+    estructurado conocido (el de un :RegistroTumor real), así que no hace
+    falta detectarlo de un texto.
+    """
+    g = get_graph()
+    cypher = """
+        MATCH (p:ProtocoloTratamiento {subtipo_molecular_match: $subtipo_molecular})
+        RETURN p.id AS id, p.histologia_subtipo AS histologia_subtipo,
+               p.biomarcadores_criticos AS biomarcadores_criticos, p.estadio_tnm AS estadio_tnm,
+               p.intencion_linea AS intencion_linea, p.protocolo_esquema AS protocolo_esquema,
+               p.modalidad AS modalidad
+        ORDER BY p.id
+    """
+    return g.query(cypher, {"subtipo_molecular": subtipo_molecular})
+
+
+def resumen_cohorte_real() -> dict:
+    """
+    Resumen agregado de la cohorte real para el panel "Cohorte real" del
+    front -- dos fuentes independientes en un solo viaje:
+
+    1. RegistroTumor (Hospital Central Mendoza, mama): total y distribución
+       por subtipo molecular y por estadio clínico.
+    2. EstudioCBio (cBioPortal METABRIC): metadata del estudio y los genes
+       con mayor frecuencia de alteración (misma relación REPORTA_FRECUENCIA/
+       SOBRE_GEN que usan los few-shot de text-to-cypher en app/main.py).
+    """
+    g = get_graph()
+
+    registro = g.query("""
+        MATCH (r:RegistroTumor) WHERE r.topografia_codigo STARTS WITH 'C50'
+        RETURN count(r) AS total,
+               avg(r.edad) AS edad_promedio,
+               collect(DISTINCT r.subtipo_molecular) AS subtipos_presentes
+    """)[0]
+
+    por_subtipo = g.query("""
+        MATCH (r:RegistroTumor) WHERE r.topografia_codigo STARTS WITH 'C50'
+        RETURN coalesce(r.subtipo_molecular, 'desconocido') AS subtipo, count(r) AS total
+        ORDER BY total DESC
+    """)
+
+    por_estadio = g.query("""
+        MATCH (r:RegistroTumor) WHERE r.topografia_codigo STARTS WITH 'C50'
+        RETURN coalesce(r.estadio_clinico, 'sin registrar') AS estadio, count(r) AS total
+        ORDER BY total DESC
+    """)
+
+    estudios = g.query("MATCH (e:EstudioCBio) RETURN e.study_id AS study_id, e.nombre AS nombre, e.descripcion AS descripcion, e.n_pacientes AS n_pacientes")
+
+    top_genes = g.query("""
+        MATCH (est:EstudioCBio)-[:REPORTA_FRECUENCIA]->(f:FrecuenciaGenCBio)-[:SOBRE_GEN]->(g:GenCBio)
+        RETURN g.hugo_symbol AS gen, f.porcentaje AS porcentaje, f.tipo_alteracion AS tipo_alteracion
+        ORDER BY f.porcentaje DESC
+        LIMIT 15
+    """)
+
+    return {
+        "registro_tumores": {
+            "total": registro["total"],
+            "edad_promedio": round(registro["edad_promedio"], 1) if registro["edad_promedio"] is not None else None,
+            "por_subtipo": por_subtipo,
+            "por_estadio": por_estadio,
+        },
+        "cbioportal": {
+            "estudio": estudios[0] if estudios else None,
+            "top_genes": top_genes,
+        },
+    }
+
+
 def obtener_elegibilidad_trials_paciente(paciente_id: str) -> list[dict]:
     """
     Lee las relaciones de elegibilidad a ensayos PERSISTIDAS para un paciente
@@ -582,21 +794,29 @@ def buscar_evidencia_civic(texto_consulta: str, tipo_cancer: str = None, n_resul
     g = get_graph()
 
     palabras = _extraer_palabras_clave(texto_consulta) + _extraer_palabras_clave(tipo_cancer)
-    if not palabras:
+    genes = _extraer_genes_mencionados(texto_consulta)
+    if not palabras and not genes:
         return contextos
 
     try:
+        # El gen se matchea por IGUALDAD exacta contra $genes (símbolos en
+        # mayúsculas extraídos del texto original), nunca por CONTAINS de
+        # palabra clave -- un CONTAINS de subcadena sobre un símbolo corto
+        # (p. ej. "PAAF" de punción-aspiración vs. el gen real PAAF1) trae
+        # evidencia genómica que no tiene nada que ver con la consulta.
         res = g.query("""
-            UNWIND $palabras AS kw
+            UNWIND (CASE WHEN size($palabras) = 0 THEN [null] ELSE $palabras END) AS kw
             MATCH (v:Variante)-[:TIENE_EVIDENCIA]->(e:Evidencia)
             OPTIONAL MATCH (e)-[:ASOCIADA_A_ENFERMEDAD]->(en:Enfermedad)
             OPTIONAL MATCH (e)-[:INVOLUCRA_TERAPIA]->(t:Terapia)
             OPTIONAL MATCH (e)-[:RESPALDADA_POR]->(f:Fuente)
-            WHERE toLower(coalesce(v.gen, '')) CONTAINS kw
-               OR toLower(coalesce(v.nombre_variante, '')) CONTAINS kw
-               OR toLower(coalesce(en.nombre, '')) CONTAINS kw
-               OR toLower(coalesce(en.nombre_mostrado, '')) CONTAINS kw
-               OR toLower(coalesce(t.nombre, '')) CONTAINS kw
+            WHERE v.gen IN $genes
+               OR (kw IS NOT NULL AND (
+                    toLower(coalesce(v.nombre_variante, '')) CONTAINS kw
+                 OR toLower(coalesce(en.nombre, '')) CONTAINS kw
+                 OR toLower(coalesce(en.nombre_mostrado, '')) CONTAINS kw
+                 OR toLower(coalesce(t.nombre, '')) CONTAINS kw
+               ))
             WITH DISTINCT v, e, en, collect(DISTINCT t.nombre) AS terapias, collect(DISTINCT f.cita) AS fuentes
             RETURN
                 v.gen AS gen,
@@ -609,7 +829,7 @@ def buscar_evidencia_civic(texto_consulta: str, tipo_cancer: str = None, n_resul
                 terapias,
                 fuentes
             LIMIT $n_results
-        """, {"palabras": palabras, "n_results": n_results})
+        """, {"palabras": palabras, "genes": genes, "n_results": n_results})
 
         for record in res:
             terapias_str = ", ".join([t for t in record.get("terapias", []) if t])
@@ -654,13 +874,23 @@ def buscar_ensayos_clinicos(texto_consulta: str, tipo_cancer: str = None, n_resu
     if not palabras:
         return contextos
 
+    # Si la consulta trae un subtipo molecular reconocible (frase explícita o
+    # valores de RE/RP/HER2), no alcanza con la coincidencia de palabras
+    # clave: un ensayo puede mencionar "cáncer de mama" y aun así ser para un
+    # perfil molecular opuesto al de la paciente (nació de un caso real:
+    # triple negativo terminó citando un ensayo de solo-endocrino para RH+).
+    subtipo = detectar_subtipo_molecular(texto_consulta)
+
     try:
         res = g.query("""
             UNWIND $palabras AS kw
             MATCH (e:EnsayoClinico)
-            WHERE ANY(c IN e.condiciones WHERE toLower(c) CONTAINS kw)
-               OR ANY(i IN e.intervenciones WHERE toLower(i) CONTAINS kw)
-               OR toLower(coalesce(e.titulo, '')) CONTAINS kw
+            WHERE (
+                ANY(c IN e.condiciones WHERE toLower(c) CONTAINS kw)
+                OR ANY(i IN e.intervenciones WHERE toLower(i) CONTAINS kw)
+                OR toLower(coalesce(e.titulo, '')) CONTAINS kw
+              )
+              AND ($subtipo IS NULL OR size(e.subtipos_relacionados) = 0 OR $subtipo IN e.subtipos_relacionados)
             WITH DISTINCT e
             RETURN
                 e.nct_id AS nct_id,
@@ -671,7 +901,7 @@ def buscar_ensayos_clinicos(texto_consulta: str, tipo_cancer: str = None, n_resu
                 e.intervenciones AS intervenciones,
                 e.url AS url
             LIMIT $n_results
-        """, {"palabras": palabras, "n_results": n_results})
+        """, {"palabras": palabras, "subtipo": subtipo, "n_results": n_results})
 
         for record in res:
             condiciones_str = ", ".join(record.get("condiciones") or [])
@@ -710,17 +940,22 @@ def buscar_variantes_clinvar(texto_consulta: str, tipo_cancer: str = None, n_res
     g = get_graph()
 
     palabras = _extraer_palabras_clave(texto_consulta) + _extraer_palabras_clave(tipo_cancer)
-    if not palabras:
+    genes = _extraer_genes_mencionados(texto_consulta)
+    if not palabras and not genes:
         return contextos
 
     try:
+        # Mismo criterio que buscar_evidencia_civic: el gen se matchea por
+        # igualdad exacta, nunca CONTAINS -- ver _extraer_genes_mencionados.
         res = g.query("""
-            UNWIND $palabras AS kw
+            UNWIND (CASE WHEN size($palabras) = 0 THEN [null] ELSE $palabras END) AS kw
             MATCH (v:VarianteClinVar)
             OPTIONAL MATCH (v)-[:ASOCIADA_A_CONDICION]->(c:CondicionClinVar)
-            WHERE toLower(coalesce(v.gen, '')) CONTAINS kw
-               OR toLower(coalesce(v.nombre, '')) CONTAINS kw
-               OR toLower(coalesce(c.nombre, '')) CONTAINS kw
+            WHERE v.gen IN $genes
+               OR (kw IS NOT NULL AND (
+                    toLower(coalesce(v.nombre, '')) CONTAINS kw
+                 OR toLower(coalesce(c.nombre, '')) CONTAINS kw
+               ))
             WITH DISTINCT v, collect(DISTINCT c.nombre) AS condiciones
             RETURN
                 v.gen AS gen,
@@ -730,7 +965,7 @@ def buscar_variantes_clinvar(texto_consulta: str, tipo_cancer: str = None, n_res
                 v.review_status AS review_status,
                 condiciones
             LIMIT $n_results
-        """, {"palabras": palabras, "n_results": n_results})
+        """, {"palabras": palabras, "genes": genes, "n_results": n_results})
 
         for record in res:
             condiciones_str = ", ".join([c for c in record.get("condiciones", []) if c][:3])
@@ -765,15 +1000,20 @@ def buscar_frecuencia_cbioportal(texto_consulta: str, tipo_cancer: str = None, n
     g = get_graph()
 
     palabras = _extraer_palabras_clave(texto_consulta) + _extraer_palabras_clave(tipo_cancer)
-    if not palabras:
+    genes = _extraer_genes_mencionados(texto_consulta)
+    if not palabras and not genes:
         return contextos
 
     try:
+        # Mismo criterio que buscar_evidencia_civic -- el gen se matchea por
+        # igualdad exacta contra $genes, nunca CONTAINS. Este era exactamente
+        # el punto donde "PAAF" (punción-aspiración) colisionaba con el gen
+        # real PAAF1 por coincidencia de subcadena.
         res = g.query("""
-            UNWIND $palabras AS kw
+            UNWIND (CASE WHEN size($palabras) = 0 THEN [null] ELSE $palabras END) AS kw
             MATCH (est:EstudioCBio)-[:REPORTA_FRECUENCIA]->(f:FrecuenciaGenCBio)-[:SOBRE_GEN]->(g:GenCBio)
-            WHERE toLower(coalesce(g.hugo_symbol, '')) CONTAINS kw
-               OR toLower(coalesce(est.nombre, '')) CONTAINS kw
+            WHERE g.hugo_symbol IN $genes
+               OR (kw IS NOT NULL AND toLower(coalesce(est.nombre, '')) CONTAINS kw)
             WITH DISTINCT est, f, g
             RETURN
                 g.hugo_symbol AS gen,
@@ -784,7 +1024,7 @@ def buscar_frecuencia_cbioportal(texto_consulta: str, tipo_cancer: str = None, n
                 est.nombre AS estudio
             ORDER BY f.porcentaje DESC
             LIMIT $n_results
-        """, {"palabras": palabras, "n_results": n_results})
+        """, {"palabras": palabras, "genes": genes, "n_results": n_results})
 
         for record in res:
             contexto = (

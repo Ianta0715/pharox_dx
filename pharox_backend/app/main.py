@@ -1,5 +1,6 @@
 import os
 import json
+import re
 from typing import Optional
 from fastapi import FastAPI, HTTPException, File, Form, UploadFile, Depends, Security
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,9 +17,14 @@ from app.logging_config import configurar_logging, get_logger
 from app.graph_db import (
     inicializar_db,
     buscar_contexto_hibrido,
+    detectar_subtipo_molecular,
     obtener_estado_grafo,
     obtener_esquema_grafo,
     listar_actualizaciones_protocolo,
+    listar_registros_tumor,
+    obtener_subtipo_molecular_registro,
+    protocolo_estandar_por_subtipo,
+    resumen_cohorte_real,
     obtener_elegibilidad_trials_paciente,
     get_graph
 )
@@ -151,6 +157,72 @@ class ActualizacionesProtocoloResponse(BaseModel):
     total: int
     actualizaciones: list[ActualizacionProtocolo]
 
+class RegistroTumorResumen(BaseModel):
+    id: str
+    edad: int | None = None
+    topografia_nombre: str | None = None
+    estadio_clinico: str | None = None
+    subtipo_molecular: str | None = None
+    receptor_estrogeno: str | None = None
+    receptor_progesterona: str | None = None
+    her2: str | None = None
+    hospital: str | None = None
+    fecha_diagnostico: str | None = None
+
+class RegistroTumoresResponse(BaseModel):
+    success: bool
+    total: int
+    registros: list[RegistroTumorResumen]
+
+class ProtocoloEstandar(BaseModel):
+    id: str
+    histologia_subtipo: str | None = None
+    biomarcadores_criticos: str | None = None
+    estadio_tnm: str | None = None
+    intencion_linea: str | None = None
+    protocolo_esquema: str | None = None
+    modalidad: str | None = None
+
+class ProtocolosEstandarResponse(BaseModel):
+    success: bool
+    subtipo_molecular: str
+    total: int
+    protocolos: list[ProtocoloEstandar]
+
+class SubtipoCount(BaseModel):
+    subtipo: str
+    total: int
+
+class EstadioCount(BaseModel):
+    estadio: str
+    total: int
+
+class ResumenRegistroTumores(BaseModel):
+    total: int
+    edad_promedio: float | None = None
+    por_subtipo: list[SubtipoCount]
+    por_estadio: list[EstadioCount]
+
+class EstudioCBio(BaseModel):
+    study_id: str | None = None
+    nombre: str | None = None
+    descripcion: str | None = None
+    n_pacientes: int | None = None
+
+class GenAlterado(BaseModel):
+    gen: str
+    porcentaje: float | None = None
+    tipo_alteracion: str | None = None
+
+class ResumenCBioPortal(BaseModel):
+    estudio: EstudioCBio | None = None
+    top_genes: list[GenAlterado]
+
+class ResumenCohorteRealResponse(BaseModel):
+    success: bool
+    registro_tumores: ResumenRegistroTumores
+    cbioportal: ResumenCBioPortal
+
 class ElegibilidadTrial(BaseModel):
     veredicto: str
     nct_id: str | None = None
@@ -258,8 +330,18 @@ Esquema de la base de datos de grafos:
 )
 
 def clean_cypher_output(text: str) -> str:
-    """Remueve bloques de código de markdown si el LLM los incluye."""
+    """
+    Remueve bloques de código de markdown si el LLM los incluye, y cualquier
+    rastro de razonamiento (<think>...</think>) que se filtre al contenido en
+    vez de ir separado -- ver por qué en el comentario de llm_cypher: pasó de
+    verdad con qwen3 sobre un caso clínico largo y complejo. Con
+    reasoning=False no debería aparecer nunca, pero si aparece, mejor
+    quedarse sin Cypher (falla el validador de abajo, cae al fallback
+    híbrido) que ejecutar contra Neo4j el texto de un pensamiento cortado.
+    """
     cleaned = text.strip()
+    cleaned = re.sub(r"<think>.*?</think>", "", cleaned, flags=re.DOTALL)
+    cleaned = re.sub(r"</?think>", "", cleaned)
     cleaned = cleaned.replace("```cypher", "").replace("```", "")
     return cleaned.strip()
 
@@ -274,7 +356,24 @@ def log_schema_and_query_start(inputs):
     log_info("Generando consulta Cypher dinámica usando Few-Shot Prompting...")
     return inputs
 
-llm_cypher = get_llm(task="cypher", data_sensitive=True, temperature=0.0)
+llm_cypher = get_llm(
+    task="cypher",
+    data_sensitive=True,
+    temperature=0.0,
+    # qwen3 es un modelo hibrido con modo de razonamiento (<think>...</think>).
+    # Generar Cypher es una traduccion corta y mecanica -- los pocos ejemplos
+    # del few-shot son una sola linea cada uno -- que no se beneficia de
+    # razonar en voz alta, y en la practica el modo pensamiento entro en un
+    # loop de repeticion sobre un caso clinico largo (cientos de propiedades
+    # inventadas repetidas) que termino filtrando un "</think>" suelto al
+    # Cypher final. reasoning=False lo desactiva para esta tarea puntual.
+    reasoning=False,
+    # Red de seguridad ademas de apagar el razonamiento: ningun Cypher valido
+    # de este esquema necesita mas de un puñado de clausulas, y un tope bajo
+    # corta cualquier repeticion temprano en vez de dejarla correr.
+    num_predict=400,
+    repeat_penalty=1.3,
+)
 
 cypher_chain = (
     RunnableLambda(log_schema_and_query_start)
@@ -379,6 +478,7 @@ la práctica clínica real, no es un reporte técnico ni un volcado de datos.
 
 Tipo de cáncer: {tipo_cancer}
 Consulta del profesional: "{question}"
+Subtipo molecular detectado en la consulta a partir de RE/RP/HER2 o mención explícita: {perfil_detectado}
 
 Evidencia recuperada de la base de datos de grafos (literatura, evidencia molecular CIViC,
 ensayos clínicos, variantes, registros reales de pacientes, protocolos estándar y casos reales
@@ -395,10 +495,42 @@ recibió ese paciente — si el campo tratamiento no está en el fragmento, no d
 no está en la evidencia, la respuesta correcta es no mencionarlo, no inferirlo.
 Si un campo (por ejemplo "Nivel de evidencia") aparece explícito en la evidencia, usá ese valor
 exacto tal como figura — nunca digas "no especificado" si el dato está ahí.
+El campo "Esquema" de un "[PROTOCOLO DE TRATAMIENTO ESTÁNDAR]" NO hace falta que lo transcribas
+vos: el sistema ya lo agrega, textual y verificado, al final de la respuesta en una sección aparte
+("Esquema exacto registrado"), después de que termines de escribir. Es la parte más sensible a
+citar mal —el orden de las fases decide si una droga se da antes o después de la cirugía— así que
+en vez de arriesgarte a resumirla de memoria, simplemente NOMBRÁ el protocolo (p. ej. "según
+KEYNOTE-522") sin listar sus drogas ni fases una por una: esa lista exacta ya la va a ver el
+médico en la sección que se agrega después de tu respuesta.
 Si el bloque de evidencia NO contiene ningún fragmento marcado explícitamente como
 "[CASO CLÍNICO REAL SIMILAR]", entonces NO EXISTE ningún caso real similar disponible: no
 inventes uno, no redactes un "paciente de X años" ficticio bajo ningún concepto — decilo
 explícitamente en vez de omitirlo o inventarlo.
+
+DATOS DE ESTE PACIENTE VS. CONOCIMIENTO DE REFERENCIA — no los confundas: los ÚNICOS datos DE ESTE
+paciente son los que están literalmente en "Consulta del profesional" arriba. Todo lo que aparece
+en "Evidencia recuperada" — variantes de ClinVar, frecuencias de cBioPortal, evidencia CIViC,
+otros "[REGISTRO REAL DE PACIENTE]", "[CASO CLÍNICO REAL SIMILAR]" — es conocimiento de la base de
+datos sobre OTRAS personas o sobre la literatura, nunca un resultado de este paciente, aunque el
+gen o el perfil coincidan. Ejemplo concreto: si la evidencia trae "[VARIANTE CLINVAR] Gen BRCA1 ...
+Pathogenic", eso NO significa que este paciente tenga esa variante — significa que la base tiene
+registrada una variante patogénica de BRCA1 como antecedente conocido, relevante para justificar
+por qué correspondería un estudio, no como un resultado ya obtenido. Nunca redactes "el paciente
+presenta la variante X" ni "se identifica en el paciente" a partir de estos fragmentos — la forma
+correcta es "la base tiene registrada la variante X" o "esto es relevante como referencia, no como
+hallazgo de este paciente". Lo mismo aplica a "[REGISTRO REAL DE PACIENTE]" y "[CASO CLÍNICO REAL
+SIMILAR]": son otras personas, no la persona de la consulta — si además difieren mucho en edad o
+estadio del caso consultado, decilo (“son de otro grupo etario/estadio, con valor limitado como
+referencia”) en vez de presentarlos como comparables sin aclarar la diferencia.
+
+VERIFICACIÓN DE SUBTIPO — chequealo antes de responder: "Subtipo molecular detectado" arriba es
+el que corresponde a ESTA consulta según sus propios datos (RE/RP/HER2). Antes de citar un
+protocolo, ensayo o evidencia, confirmá que el subtipo al que se refiere ese fragmento coincide
+con el detectado. Si un fragmento de evidencia es de un subtipo distinto (por ejemplo, evidencia
+de "HER2_positivo" cuando el detectado es "Triple_negativo"), NO lo presentes como aplicable a
+esta consulta — descartalo o, si igual querés mencionarlo como referencia general, aclará
+explícitamente que corresponde a otro perfil molecular. Si "Subtipo molecular detectado" dice
+"no determinado", no le atribuyas a la consulta ningún subtipo que no haya dicho explícitamente.
 
 TU ROL: SOS UNA HERRAMIENTA DE CONSULTA, NO QUIEN DECIDE. Reportás qué dice la evidencia
 encontrada en la base de datos — nunca aconsejás, sugerís ni recomendás una conducta clínica. La
@@ -427,27 +559,51 @@ CÓMO ESCRIBIR LA RESPUESTA — leela dos veces antes de responder:
 - Escribí en prosa clara con viñetas cortas donde ayude a escanear rápido, no una lista exhaustiva
   de todos los campos de cada fragmento.
 
-Estructura sugerida (adaptala si la consulta no encaja, pero mantené el orden de prioridad —
-el resumen de la evidencia va primero, las fuentes al final, no al revés):
-1. **Qué encontramos:** resumen directo de lo que la evidencia dice sobre la consulta, en 1-3
-   líneas — qué terapia(s)/protocolo(s) aparecen asociados a ese perfil clínico en los datos,
-   reportado como hallazgo ("la evidencia señala...", "el protocolo registrado es..."), no como
-   consejo.
+Estructura sugerida (adaptala a lo que la consulta REALMENTE pregunta, no la fuerces si la
+pregunta es más simple):
+1. **Respuesta directa a cada parte de lo preguntado:** si la consulta pide varias cosas
+   puntuales (por ejemplo estadificación, esquema sistémico, manejo quirúrgico/axilar, estudios
+   adicionales, conducta según respuesta patológica), respondé cada una por separado, EN ESE
+   ORDEN, con lo que la evidencia efectivamente sostiene. Esto va primero y es el cuerpo principal
+   de la respuesta — no es un resumen de qué encontró la búsqueda, es la respuesta a la pregunta.
+   Para cada parte que la evidencia NO cubre, decilo ahí mismo ("la base no tiene información
+   registrada sobre el manejo axilar post-neoadyuvancia para este perfil") en vez de omitirla en
+   silencio: el médico necesita saber qué quedó sin responder, no solo lo que sí se encontró.
 2. **Evidencia que lo respalda:** la evidencia científica y el protocolo estándar encontrados,
    resumidos (no transcriptos campo por campo), citando nivel de evidencia cuando esté disponible.
 3. **Contexto real:** qué muestran los pacientes reales similares del hospital (registros y/o
-   casos clínicos reales) — si no hay ninguno, decilo con honestidad en una línea, sin inventar.
+   casos clínicos reales) — si no hay ninguno razonablemente comparable, decilo con honestidad en
+   vez de forzar una comparación floja (ver la regla de arriba sobre edad/estadio).
 4. **Otros datos relevantes:** alternativas, ensayos clínicos activos relevantes, o
-   mutaciones/variantes presentes en la evidencia — solo si aportan algo que el punto 1 no cubre.
-5. **Ausencia de evidencia:** si la evidencia está vacía o no responde a la pregunta, decilo con
-   honestidad — la base de datos no tiene información sobre X — en vez de inventar contenido.
+   mutaciones/variantes de referencia presentes en la evidencia — solo si aportan algo que el
+   punto 1 no cubre, y siempre aclarando que son de la base, no de este paciente.
+5. **Ausencia de evidencia:** si la evidencia está vacía o no responde nada de lo preguntado,
+   decilo con honestidad — la base de datos no tiene información sobre X — en vez de inventar
+   contenido.
+
+CHECKLIST DE PLAN COMPLETO — cuando la consulta pide un plan de manejo o tratamiento de un caso
+(no para preguntas puntuales de un solo dato): una respuesta que cubre bien lo que preguntaron
+puede igual sonar más completa de lo que es si calla en silencio las partes de un plan oncológico
+que la base no cubre. Antes de cerrar la respuesta, repasá esta lista y por cada ítem que no haya
+quedado cubierto en el punto 1, nombralo explícitamente en "Ausencia de evidencia" — no lo dejes
+afuera sin mencionarlo, aunque el médico no lo haya preguntado con esas palabras:
+- Estadificación
+- Tratamiento sistémico (neoadyuvante y adyuvante)
+- Cirugía mamaria y manejo axilar
+- Radioterapia
+- Estudios genéticos indicados
+- Conducta según la respuesta patológica (si hubo neoadyuvancia)
+- Consideraciones especiales (edad, fertilidad, comorbilidades, estado menopáusico)
+Un médico que lee la respuesta tiene que poder distinguir "esto no aplica a este caso" de "esto no
+está en nuestra base" de "esto sí lo cubrimos" — las tres son respuestas válidas, la que no es
+válida es el silencio.
 
 Respondé siempre en español, con rigor oncológico.
 """
 
 prompt_clinico = PromptTemplate(
     template=prompt_clinico_template,
-    input_variables=["tipo_cancer", "evidencia", "question"]
+    input_variables=["tipo_cancer", "evidencia", "question", "perfil_detectado"]
 )
 
 def log_sintesis_start(inputs):
@@ -458,6 +614,13 @@ def log_sintesis_start(inputs):
     return inputs
 
 llm_sintesis = get_llm(task="sintesis", data_sensitive=True, temperature=0.1)
+# Se probó qwen3:14b acá (2026-09-16): 10x más lento (236s vs. 22-30s) y sin
+# mejora real -- en la prueba con el caso de referencia inventó un esquema
+# completo ("CMF") que no existía en ninguna parte de la evidencia, omitiendo
+# además el componente de inmunoterapia que sí estaba presente. El problema de
+# fidelidad de lectura no se resuelve subiendo de modelo; ver
+# PROTOCOLO_VERIFICADO_TEMPLATE más abajo para la solución que sí funciona:
+# el esquema exacto lo inserta el código, no el LLM.
 
 sintesis_chain = (
     prompt_clinico
@@ -484,9 +647,10 @@ coordinador_chain = (
                 "question": x["question"],
                 "tipo_cancer": x["tipo_cancer"],
                 "evidencia": x["datos_recuperacion"]["evidencia"],
-                "metodo_recuperacion": x["datos_recuperacion"]["metodo_recuperacion"]
+                "metodo_recuperacion": x["datos_recuperacion"]["metodo_recuperacion"],
+                "perfil_detectado": detectar_subtipo_molecular(x["question"]) or "no determinado a partir del texto",
             }
-        ) 
+        )
         | RunnableLambda(log_sintesis_start)
         | sintesis_chain,
         
@@ -499,6 +663,41 @@ coordinador_chain = (
 # -------------------------------------------------------------------------
 # ENDPOINTS DE FASTAPI
 # -------------------------------------------------------------------------
+def _bloque_protocolo_verificado(consulta: str) -> str:
+    """
+    Arma el bloque con el esquema EXACTO del protocolo que matchea el subtipo
+    molecular detectado en la consulta, tal como está en la base -- sin pasar
+    por el LLM. Nace de que ni qwen3:8b ni qwen3:14b citaron el esquema de
+    forma confiable con puro prompting: 8b lo parafraseaba mal (invertía el
+    orden, se comía drogas), 14b llegó a inventar un esquema entero ("CMF")
+    que no estaba en ninguna parte de la evidencia. La única forma de
+    garantizar que el médico vea el esquema correcto es que el código lo
+    agregue tal cual, no que el modelo lo redacte de memoria.
+    """
+    subtipo = detectar_subtipo_molecular(consulta)
+    if not subtipo or subtipo == "desconocido":
+        return ""
+    try:
+        protocolos = protocolo_estandar_por_subtipo(subtipo)
+    except Exception as e:
+        log_error(f"Error al armar el bloque de protocolo verificado: {e}")
+        return ""
+    if not protocolos:
+        return ""
+
+    lineas = [
+        f"\n\n---\n**Esquema exacto registrado para el subtipo detectado ({subtipo}) "
+        "— tal como figura en la base, no redactado por el modelo:**"
+    ]
+    for p in protocolos:
+        lineas.append(
+            f"- {p.get('protocolo_esquema') or '?'} "
+            f"({p.get('modalidad') or '?'} · {p.get('intencion_linea') or '?'} · "
+            f"estadio {p.get('estadio_tnm') or '?'})"
+        )
+    return "\n".join(lineas)
+
+
 @app.post("/api/v1/consultar", dependencies=[Depends(verificar_api_key)], response_model=ConsultaResponse)
 def consultar_copiloto(payload: ConsultaMedicaRequest):
     """
@@ -512,9 +711,11 @@ def consultar_copiloto(payload: ConsultaMedicaRequest):
         # Invocación de la cadena LangChain
         resultado = coordinador_chain.invoke(inputs)
 
+        respuesta_final = resultado["respuesta"] + _bloque_protocolo_verificado(payload.consulta)
+
         return {
             "success": True,
-            "respuesta": resultado["respuesta"],
+            "respuesta": respuesta_final,
             "cypher_utilizado": resultado["cypher_utilizado"],
             "evidencia_recuperada": resultado["evidencia_recuperada"],
             "metodo_recuperacion": resultado["metodo_recuperacion"]
@@ -563,6 +764,73 @@ def ver_actualizaciones_protocolo(subtipo_molecular: Optional[str] = None, limit
         raise HTTPException(
             status_code=500,
             detail=f"Error al leer actualizaciones de protocolo: {repr(e)}"
+        )
+
+# -------------------------------------------------------------------------
+# REGISTRO REAL DE TUMORES (Hospital Central Mendoza) — listado para selector
+# -------------------------------------------------------------------------
+@app.get("/api/v1/registro_tumores", dependencies=[Depends(verificar_api_key)], response_model=RegistroTumoresResponse)
+def ver_registros_tumor(subtipo_molecular: Optional[str] = None, limit: int = 50):
+    """
+    Lista pacientes reales (:RegistroTumor) del Hospital Central Mendoza, para
+    que un cliente pueda ofrecer un selector sin conocer de antemano los ids
+    RT_XXXX. Filtrado a mama (única población con elegibilidad a ensayos
+    calculada por app/gold/reglas_elegibilidad_trials.py).
+    """
+    if subtipo_molecular and subtipo_molecular not in SUBTIPOS_MOLECULARES_VALIDOS:
+        raise HTTPException(
+            status_code=422,
+            detail=f"subtipo_molecular inválido. Valores permitidos: {sorted(SUBTIPOS_MOLECULARES_VALIDOS)}"
+        )
+    try:
+        registros = listar_registros_tumor(subtipo_molecular=subtipo_molecular, limit=limit)
+        return {"success": True, "total": len(registros), "registros": registros}
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al leer registros de tumor: {repr(e)}"
+        )
+
+@app.get("/api/v1/registro_tumores/{paciente_id}/protocolo_estandar", dependencies=[Depends(verificar_api_key)], response_model=ProtocolosEstandarResponse)
+def ver_protocolo_estandar(paciente_id: str):
+    """
+    Protocolo(s) de tratamiento estándar (subgrafo :ProtocoloTratamiento,
+    conocimiento de referencia -- ver app/gold/protocolos_tratamiento_to_neo4j.py)
+    que matchean el subtipo molecular de un paciente real. No es el
+    tratamiento que recibió ese paciente (RegistroTumor no tiene esa
+    relación) -- es el esquema estándar que correspondería a su perfil.
+    """
+    try:
+        subtipo = obtener_subtipo_molecular_registro(paciente_id)
+        if subtipo is None:
+            raise HTTPException(status_code=404, detail=f"No se encontró el paciente {paciente_id}.")
+        protocolos = protocolo_estandar_por_subtipo(subtipo)
+        return {"success": True, "subtipo_molecular": subtipo, "total": len(protocolos), "protocolos": protocolos}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al leer protocolo estándar: {repr(e)}"
+        )
+
+# -------------------------------------------------------------------------
+# COHORTE REAL — resumen agregado (RegistroTumor + cBioPortal METABRIC)
+# -------------------------------------------------------------------------
+@app.get("/api/v1/cohorte/resumen", dependencies=[Depends(verificar_api_key)], response_model=ResumenCohorteRealResponse)
+def ver_resumen_cohorte_real():
+    """
+    Resumen agregado de la cohorte real (no del dataset demo TCGA): registro
+    de tumores del Hospital Central Mendoza y frecuencias génicas reales de
+    cBioPortal METABRIC (2.509 pacientes publicados).
+    """
+    try:
+        resumen = resumen_cohorte_real()
+        return {"success": True, **resumen}
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al leer resumen de cohorte real: {repr(e)}"
         )
 
 # -------------------------------------------------------------------------

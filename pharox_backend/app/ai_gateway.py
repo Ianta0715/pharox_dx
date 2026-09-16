@@ -31,21 +31,32 @@ TASK_PROVIDERS = {
 }
 
 
-def get_llm(task: str = "default", data_sensitive: bool = True, temperature: float = 0.0):
+def get_llm(task: str = "default", data_sensitive: bool = True, temperature: float = 0.0, **kwargs):
     """
     Devuelve el chat model configurado para `task`.
 
     `data_sensitive=True` (default) ignora TASK_PROVIDERS y fuerza "ollama".
     Pasar `data_sensitive=False` solo para tareas que razonan exclusivamente
     sobre conocimiento público ya publicado (nunca sobre datos de un paciente).
+
+    `**kwargs` se reenvían tal cual al cliente del proveedor (p. ej.
+    `reasoning`, `num_predict`, `repeat_penalty` para Ollama) -- quien arma la
+    cadena en main.py decide esos parámetros por tarea, ai_gateway solo los
+    transporta, para no hardcodear acá conocimiento de qué tarea necesita qué.
     """
     provider = "ollama" if data_sensitive else TASK_PROVIDERS.get(task, TASK_PROVIDERS["default"])
-    return _build_llm(provider, temperature=temperature)
+    return _build_llm(provider, temperature=temperature, **kwargs)
 
 
-def _build_llm(provider: str, temperature: float):
+def _build_llm(provider: str, temperature: float, **kwargs):
     if provider == "ollama":
-        return ChatOllama(model=DEFAULT_MODEL, base_url=OLLAMA_HOST, temperature=temperature)
+        # `model` en kwargs permite que una tarea puntual use un modelo Ollama
+        # distinto de DEFAULT_MODEL (p. ej. una tarea que necesita mas
+        # capacidad de razonamiento que otra) sin agregar un segundo enum de
+        # proveedor -- sigue siendo el mismo proveedor "ollama", solo cambia
+        # el nombre del modelo que Ollama sirve.
+        model = kwargs.pop("model", DEFAULT_MODEL)
+        return ChatOllama(model=model, base_url=OLLAMA_HOST, temperature=temperature, **kwargs)
     raise ValueError(
         f"Proveedor '{provider}' configurado pero no implementado en ai_gateway.py "
         f"(_build_llm). Proveedores disponibles hoy: ollama."
