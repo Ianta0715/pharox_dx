@@ -303,6 +303,22 @@ EXAMPLES = [
     {
         "question": "¿Con qué frecuencia se altera el gen PIK3CA en estudios de cBioPortal de cáncer de mama?",
         "query": "MATCH (est:EstudioCBio)-[:REPORTA_FRECUENCIA]->(f:FrecuenciaGenCBio)-[:SOBRE_GEN]->(g:GenCBio {{hugo_symbol: 'PIK3CA'}}) RETURN est.nombre AS estudio, f.porcentaje AS porcentaje_alterado, f.tipo_alteracion AS tipo"
+    },
+    {
+        "question": "¿Cuántas pacientes reales del registro de tumores tienen subtipo molecular Triple Negativo?",
+        "query": "MATCH (r:RegistroTumor) WHERE r.topografia_codigo STARTS WITH 'C50' AND r.subtipo_molecular = 'Triple_negativo' RETURN count(r) AS cantidad"
+    },
+    {
+        "question": "¿Cuál es el protocolo de tratamiento estándar registrado para un perfil HER2 positivo?",
+        "query": "MATCH (p:ProtocoloTratamiento) WHERE p.topografia_codigo CONTAINS 'C50' AND p.subtipo_molecular_match = 'HER2_positivo' RETURN p.protocolo_esquema AS esquema, p.intencion_linea AS intencion, p.modalidad AS modalidad"
+    },
+    {
+        "question": "¿Hay actualizaciones recientes de guías ASCO o ESMO para perfil Triple Negativo?",
+        "query": "MATCH (a:ActualizacionProtocolo) WHERE a.subtipos_detectados CONTAINS 'Triple_negativo' RETURN a.titulo AS titulo, a.sociedad AS sociedad, a.fecha_publicacion AS fecha ORDER BY a.fecha_publicacion DESC LIMIT 5"
+    },
+    {
+        "question": "¿Para qué ensayos clínicos ya se evaluó la elegibilidad de la paciente RT_0001?",
+        "query": "MATCH (r:RegistroTumor {{id: 'RT_0001'}})-[rel]->(e:EnsayoClinico) WHERE type(rel) IN ['HABILITA_TRIAL', 'CONDICIONA_TRIAL', 'EXCLUYE_TRIAL'] RETURN type(rel) AS veredicto, e.nct_id AS nct_id, e.titulo AS titulo, rel.motivo AS motivo"
     }
 ]
 

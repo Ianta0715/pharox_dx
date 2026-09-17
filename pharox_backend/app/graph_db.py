@@ -38,11 +38,21 @@ def get_graph() -> Neo4jGraph:
 
 NOTA_INDEPENDENCIA_SUBGRAFOS = (
     "\nNota importante: los subgrafos de conocimiento público (CIViC, EnsayoClinico, "
-    "VarianteClinVar, EstudioCBio) son independientes entre sí y del subgrafo clínico de "
-    "pacientes (Paciente -> Tumor/CasoClinico); no existen relaciones directas entre ellos. "
-    "Para preguntas sobre pacientes o historiales, consulta el subgrafo clínico; para "
-    "evidencia científica, ensayos, variantes o frecuencia poblacional, consulta el "
-    "subgrafo público correspondiente.\n"
+    "VarianteClinVar, EstudioCBio), los subgrafos reales de mama (RegistroTumor, "
+    "ProtocoloTratamiento, ActualizacionProtocolo) y el subgrafo clínico sintético de "
+    "pacientes (Paciente -> Tumor/CasoClinico) son independientes ENTRE SÍ; no existen "
+    "relaciones directas entre ellos (con la única excepción marcada más abajo). Para "
+    "preguntas sobre pacientes o historiales sintéticos, consulta el subgrafo clínico; para "
+    "evidencia científica, ensayos, variantes o frecuencia poblacional, consulta el subgrafo "
+    "público correspondiente; para pacientes reales, protocolos estándar o actualizaciones de "
+    "guías, consulta el subgrafo real correspondiente y cruza por coincidencia EXACTA de "
+    "subtipo molecular (o CONTAINS si la propiedad es una lista/string separado por comas, "
+    "como ActualizacionProtocolo.subtipos_detectados o EnsayoClinico.subtipos_relacionados), "
+    "nunca por texto libre.\n"
+    "ÚNICA EXCEPCIÓN: (:RegistroTumor)-[:HABILITA_TRIAL|:CONDICIONA_TRIAL|:EXCLUYE_TRIAL]->"
+    "(:EnsayoClinico) SÍ es una relación directa real -- elegibilidad a ensayos ya evaluada y "
+    "persistida (ver app/gold/reglas_elegibilidad_trials.py). El tipo de relación no se puede "
+    "parametrizar en Cypher: usar WHERE type(rel) IN [...] o type(rel) para leerlo.\n"
 )
 
 
@@ -82,12 +92,15 @@ def obtener_esquema_nativo_fallback() -> str:
         "Enfermedad": "civic_id (Integer), nombre (String), nombre_mostrado (String), doid (String)",
         "Terapia": "civic_id (Integer), nombre (String), ncit_id (String)",
         "Fuente": "civic_id (Integer), pubmed_id (String), tipo_fuente (String), cita (String), anio (Integer), journal (String), url (String)",
-        "EnsayoClinico": "nct_id (String), titulo (String), fases (List<String>), estado (String), condiciones (List<String>), intervenciones (List<String>), sponsor (String), resumen (String), paises (List<String>), url (String)",
+        "EnsayoClinico": "nct_id (String), titulo (String), fases (List<String>), estado (String), condiciones (List<String>), intervenciones (List<String>), sponsor (String), resumen (String), paises (List<String>), url (String), criterios_elegibilidad (String, texto libre del protocolo), sexo (String: ALL/FEMALE/MALE), edad_minima_anios (Integer), edad_maxima_anios (Integer), acepta_voluntarios_sanos (Boolean), subtipos_relacionados (List<String>, vocabulario de subtipo_molecular, vacío si el ensayo no restringe por subtipo)",
         "VarianteClinVar": "variation_id (Integer), nombre (String), gen (String), tipo_variante (String), hgvs_c (String), hgvs_p (String), assembly (String), cromosoma (String), posicion (String), clasificacion_clinica (String), review_status (String), ultima_evaluacion (String)",
         "CondicionClinVar": "nombre (String), medgen_id (String)",
         "EstudioCBio": "study_id (String), nombre (String), descripcion (String), n_pacientes (Integer)",
         "GenCBio": "entrez_id (Integer), hugo_symbol (String)",
         "FrecuenciaGenCBio": "frecuencia_id (String), n_alterados (Integer), n_perfilados (Integer), porcentaje (Float), tipo_alteracion (String)",
+        "RegistroTumor": "id (String), edad (Integer), sexo (String), topografia_codigo (String, filtrar SIEMPRE por STARTS WITH 'C50' para mama), topografia_nombre (String), estadio_clinico (String), estadio_patologico (String), subtipo_molecular (String, vocabulario cerrado: HER2_positivo / Triple_negativo / RH_positivo_HER2_negativo / desconocido), receptor_estrogeno (String), receptor_progesterona (String), her2 (String), ecog (String), hospital (String), fecha_diagnostico (String, formato ISO YYYY-MM-DD)",
+        "ProtocoloTratamiento": "id (String), topografia_codigo (String, filtrar SIEMPRE por CONTAINS 'C50' para mama), histologia_subtipo (String), subtipo_molecular_match (String, mismo vocabulario cerrado que RegistroTumor.subtipo_molecular -- OJO: acá la propiedad se llama subtipo_molecular_match, no subtipo_molecular), estadio_tnm (String), intencion_linea (String), protocolo_esquema (String), modalidad (String), biomarcadores_criticos (String)",
+        "ActualizacionProtocolo": "id (String), titulo (String), resumen (String), sociedad (String: ASCO/ESMO/NCCN/otro), fuente (String), fecha_publicacion (String, formato ISO), subtipos_detectados (String, lista separada por comas del mismo vocabulario -- usar CONTAINS, nunca igualdad exacta), url (String)",
     }
 
     relaciones_conocidas = [
@@ -105,6 +118,9 @@ def obtener_esquema_nativo_fallback() -> str:
         ("ASOCIADA_A_CONDICION", "VarianteClinVar", "CondicionClinVar"),
         ("REPORTA_FRECUENCIA", "EstudioCBio", "FrecuenciaGenCBio"),
         ("SOBRE_GEN", "FrecuenciaGenCBio", "GenCBio"),
+        ("HABILITA_TRIAL", "RegistroTumor", "EnsayoClinico"),
+        ("CONDICIONA_TRIAL", "RegistroTumor", "EnsayoClinico"),
+        ("EXCLUYE_TRIAL", "RegistroTumor", "EnsayoClinico"),
     ]
 
     schema_str = "Nodos y propiedades en la base de datos de grafos:\n"
