@@ -133,12 +133,20 @@ Motor de consultas (`app/main.py`, orquestado con LangChain LCEL):
 cp .env.example .env
 # completar CIVIC_API_KEY, ANONYMIZATION_SALT y PHAROX_API_KEY en .env
 # (los dos últimos podés generarlos con: python -c "import secrets; print(secrets.token_urlsafe(32))")
+# completar NEO4J_PASSWORD con la contraseña de AuraDB (pedila al equipo por un canal privado)
 
 docker compose up -d --build
 ```
 
-Esto levanta Neo4j (`localhost:7474` browser / `bolt://localhost:7687`), Ollama (descarga
-automáticamente `qwen3:8b` y `nomic-embed-text`) y el backend FastAPI en `localhost:8000`.
+Esto levanta Ollama (descarga automáticamente `qwen3:8b` y `nomic-embed-text`) y el backend
+FastAPI en `localhost:8000`. La base de grafos es la instancia **AuraDB Free "Pharox"**
+compartida por el equipo (`NEO4J_URI` en `.env`), por lo que todos ven los mismos datos. Se
+puede explorar desde console.neo4j.io → Instances → Query. Aura Free se pausa tras 3 días sin
+uso: si el backend no conecta, reactivar la instancia desde la consola.
+
+Para trabajar con un Neo4j local en su lugar (`localhost:7474` / `bolt://localhost:7687`):
+`docker compose --profile local-db up -d` y apuntar `NEO4J_URI`/`NEO4J_USER`/`NEO4J_PASSWORD`/`NEO4J_DATABASE=neo4j` en `.env` a
+esa base (ver comentarios en [.env.example](.env.example)).
 
 Ver variables de entorno documentadas en [.env.example](.env.example).
 
