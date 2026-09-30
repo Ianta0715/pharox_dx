@@ -3,7 +3,7 @@ europepmc_explorer.py
 Cliente de exploracion para la API REST de Europe PMC (ebi.ac.uk/europepmc).
 
 Objetivo: traer literatura reciente de cancer de mama (titulo + abstract + PMID)
-para poblar el nodo :Literatura ya existente (ver app/graph_db.py) con evidencia
+para poblar el nodo :Literatura ya existente (ver app/conocimiento/esquema.py) con evidencia
 real en vez de -o ademas de- el dataset sintetico que lo siembra hoy. A diferencia
 de las otras 3 fuentes nuevas, esto NO crea un subgrafo propio.
 

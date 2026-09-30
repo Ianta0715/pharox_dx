@@ -4,19 +4,17 @@ Normaliza e ingesta en Neo4j los articulos descargados por app/bronze/europepmc_
 
 A diferencia de las otras 3 fuentes nuevas, este script NO crea un subgrafo propio:
 repuebla la etiqueta :Literatura que ya existe (indice vectorial literature_vectors,
-ya cableada en el paso 1 de buscar_contexto_hibrido en app/graph_db.py). La unica
-constraint que hacia falta (unique_literatura_id) se agrego directamente en
-graph_db.py::inicializar_esquema, porque Literatura ya es responsabilidad de ese
-modulo, no de un subgrafo independiente (ver nota en graph_db.py).
+que consulta app/conocimiento/fuentes/semantica.py). La constraint unique_literatura_id
+se crea en app/conocimiento/esquema.py, porque Literatura es responsabilidad de ese
+modulo, no de un subgrafo independiente.
 
-Usa MERGE por id=PMID (no CREATE): a diferencia del seed sintetico de
-graph_db.py::inicializar_db (que corre una sola vez si el grafo esta vacio), este
-script se puede correr repetidamente -- esa es la idea de "incorporar evidencia
-nueva automaticamente" del usuario.
+Usa MERGE por id=PMID (no CREATE): a diferencia de la siembra sintetica de
+app/conocimiento/esquema.py::inicializar_db (que corre una sola vez si el grafo esta
+vacio), este script se puede correr repetidamente -- esa es la idea de "incorporar
+evidencia nueva automaticamente" del usuario.
 
-tipo_cancer se escribe con el MISMO literal exacto que usa el resto del proyecto
-("Cáncer de Mama", ver main.py) para que el filtro de buscar_contexto_hibrido lo
-encuentre incluso sin el fix de normalizacion (defensa en profundidad).
+tipo_cancer se escribe con el MISMO literal exacto ("Cáncer de Mama") que filtra la
+busqueda vectorial en app/conocimiento/fuentes/semantica.py.
 
 IMPORTANTE: a diferencia de los otros 3 gold scripts (solo necesitan Neo4j), este
 necesita Ollama corriendo (genera embeddings via app.ai_gateway.generar_embedding,
@@ -34,23 +32,19 @@ import json
 import glob
 import html
 
-from neo4j import GraphDatabase
+from app.conocimiento.grafo import sesion_escritura
 from dotenv import load_dotenv
 
 from app.ai_gateway import generar_embedding
 
 load_dotenv()
 
-NEO4J_URI = os.getenv("NEO4J_URI", "bolt://localhost:7687")
-NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
-NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "pharoxpass")
 
 BRONZE_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
     "data", "bronze"
 )
 
-driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
 
 TIPO_CANCER_MAMA = "Cáncer de Mama"
 
@@ -138,7 +132,7 @@ def procesar_archivo_europepmc(ruta: str) -> int:
         articulos_crudos = json.load(f)
 
     procesados = 0
-    with driver.session() as session:
+    with sesion_escritura() as session:
         for crudo in articulos_crudos:
             articulo = normalizar_articulo(crudo)
             if not articulo["id"] or not articulo["text"].strip("."):

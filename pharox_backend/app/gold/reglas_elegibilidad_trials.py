@@ -5,7 +5,7 @@ Matching de trials activos" (paso determinístico + paso semántico).
 
 A DIFERENCIA de todo el resto de los subgrafos del proyecto (CIViC, ClinVar,
 cBioPortal, ProtocoloTratamiento, ActualizacionProtocolo -- ver la nota de
-independencia de subgrafos en app/graph_db.py), este script SÍ crea
+independencia de subgrafos en app/conocimiento/esquema.py), este script SÍ crea
 relaciones explícitas y persistentes entre dos subgrafos que hasta ahora
 estaban desconectados: (:RegistroTumor)-[:HABILITA_TRIAL|CONDICIONA_TRIAL|
 EXCLUYE_TRIAL]->(:EnsayoClinico). Es la excepción deliberada: para preguntas
@@ -47,81 +47,24 @@ Uso:
     python -m app.gold.reglas_elegibilidad_trials 10 20                # limita a 10 pacientes x 20 ensayos (pruebas rapidas)
     python -m app.gold.reglas_elegibilidad_trials 10 20 --con-llm      # + paso semantico (requiere Ollama)
 """
-import os
+
 import re
 import sys
 import json
 from datetime import datetime, timezone
 
-from neo4j import GraphDatabase
 from dotenv import load_dotenv
 
 from app.ai_gateway import get_llm
+from app.conocimiento.grafo import sesion_escritura
+
+# Paso 1 (determinístico, puro): vive en el dominio porque el copiloto también
+# lo usa en vivo para filtrar ensayos candidatos de una consulta.
+from app.dominio.ensayos import evaluar_criterios_deterministicos, veredicto as _veredicto
 
 load_dotenv()
 
-NEO4J_URI = os.getenv("NEO4J_URI", "bolt://localhost:7687")
-NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
-NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "pharoxpass")
-
-driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
-
-_MAPA_SEXO_PACIENTE = {"Mujer": "FEMALE", "Hombre": "MALE"}
 _VEREDICTOS_VALIDOS = {"HABILITA", "CONDICIONA", "EXCLUYE"}
-
-
-def _veredicto(veredicto: str, motivo: str, regla: str, criterio_pendiente: str | None = None) -> dict:
-    return {"veredicto": veredicto, "motivo": motivo, "regla": regla, "criterio_pendiente": criterio_pendiente}
-
-
-# ---------------------------------------------------------------------------
-# PASO 1 — DETERMINÍSTICO (pura: sin red, sin Neo4j, sin LLM)
-# ---------------------------------------------------------------------------
-def evaluar_criterios_deterministicos(paciente: dict, ensayo: dict) -> dict:
-    """
-    Evalúa criterios OBJETIVOS y estructurados. Recibe los dicts tal como los
-    devuelven graph_db.obtener_pacientes_mama_activos / obtener_ensayos_activos
-    (mismas claves que las propiedades de :RegistroTumor / :EnsayoClinico).
-    """
-    if ensayo.get("estado") != "RECRUITING":
-        return _veredicto(
-            "EXCLUYE",
-            f"El ensayo no está reclutando actualmente (estado: {ensayo.get('estado') or 'desconocido'}).",
-            regla="estado_reclutamiento",
-        )
-
-    sexo_paciente = _MAPA_SEXO_PACIENTE.get((paciente.get("sexo") or "").strip())
-    sexo_ensayo = (ensayo.get("sexo") or "ALL").upper()
-    if sexo_paciente and sexo_ensayo != "ALL" and sexo_paciente != sexo_ensayo:
-        return _veredicto(
-            "EXCLUYE",
-            f"El ensayo solo acepta sexo {sexo_ensayo.lower()} (paciente: {sexo_paciente.lower()}).",
-            regla="sexo",
-        )
-
-    edad = paciente.get("edad")
-    edad_min = ensayo.get("edad_minima_anios")
-    edad_max = ensayo.get("edad_maxima_anios")
-    if edad is not None and edad_min is not None and edad < edad_min:
-        return _veredicto("EXCLUYE", f"Edad ({edad}) por debajo del mínimo del ensayo ({edad_min} años).", regla="edad_minima")
-    if edad is not None and edad_max is not None and edad > edad_max:
-        return _veredicto("EXCLUYE", f"Edad ({edad}) por encima del máximo del ensayo ({edad_max} años).", regla="edad_maxima")
-
-    subtipo_paciente = paciente.get("subtipo_molecular") or "desconocido"
-    subtipos_ensayo = ensayo.get("subtipos_relacionados") or []
-    if subtipo_paciente != "desconocido" and subtipos_ensayo and subtipo_paciente not in subtipos_ensayo:
-        return _veredicto(
-            "EXCLUYE",
-            f"Perfil molecular de la paciente ({subtipo_paciente}) no coincide con el perfil del ensayo ({', '.join(subtipos_ensayo)}).",
-            regla="subtipo_molecular",
-        )
-
-    return _veredicto(
-        "CONDICIONA",
-        "Ningún criterio estructurado (reclutamiento, sexo, edad, subtipo molecular) descarta a la paciente.",
-        regla="filtros_estructurados_ok",
-        criterio_pendiente="Quedan por verificar los criterios en texto libre del protocolo (líneas de tratamiento previas, biomarcadores adicionales, comorbilidades, etc.).",
-    )
 
 
 # ---------------------------------------------------------------------------
@@ -338,7 +281,7 @@ def main():
     )
 
     conteos = {"HABILITA": 0, "CONDICIONA": 0, "EXCLUYE": 0}
-    with driver.session() as session:
+    with sesion_escritura() as session:
         pacientes = obtener_pacientes_mama_activos(session, max_pacientes)
         ensayos = obtener_ensayos_activos(session, max_ensayos)
         print(f"{len(pacientes)} paciente(s) de mama x {len(ensayos)} ensayo(s) reclutando = {len(pacientes) * len(ensayos)} par(es) a evaluar.")

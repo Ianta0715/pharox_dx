@@ -5,7 +5,7 @@ app/bronze/clinicaltrials_explorer.py.
 
 Crea un subgrafo independiente (:EnsayoClinico), sin relaciones hacia el subgrafo
 clinico de pacientes ni hacia CIViC/ClinVar/cBioPortal (ver nota de independencia
-de subgrafos en app/graph_db.py). Es un nodo "plano": condiciones e intervenciones
+de subgrafos en app/conocimiento/esquema.py). Es un nodo "plano": condiciones e intervenciones
 son propiedades de lista, no nodos propios, porque la API de ClinicalTrials.gov las
 entrega como strings sueltos (sin id ni campos adicionales que ameriten un nodo
 reutilizable, a diferencia de Enfermedad/Terapia en CIViC).
@@ -27,21 +27,16 @@ import sys
 import json
 import glob
 
-from neo4j import GraphDatabase
+from app.conocimiento.grafo import sesion_escritura
 from dotenv import load_dotenv
 
 load_dotenv()
 
-NEO4J_URI = os.getenv("NEO4J_URI", "bolt://localhost:7687")
-NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
-NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "pharoxpass")
 
 BRONZE_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
     "data", "bronze"
 )
-
-driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
 
 
 def crear_constraints(tx):
@@ -49,7 +44,7 @@ def crear_constraints(tx):
 
 
 def inicializar_esquema_ensayos():
-    with driver.session() as session:
+    with sesion_escritura() as session:
         session.execute_write(crear_constraints)
 
 
@@ -175,7 +170,7 @@ def procesar_archivo_clinicaltrials(ruta: str) -> int:
         estudios = json.load(f)
 
     procesados = 0
-    with driver.session() as session:
+    with sesion_escritura() as session:
         for study in estudios:
             ensayo = normalizar_ensayo(study)
             if not ensayo["nct_id"]:

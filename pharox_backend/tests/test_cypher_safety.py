@@ -1,11 +1,11 @@
 """
-Tests del filtro de seguridad Cypher (app/main.py). Es la única barrera
-entre lo que el LLM genera y lo que se ejecuta contra Neo4j: si esto falla,
-un Cypher de escritura generado por el modelo podría ejecutarse.
+Tests del filtro de seguridad Cypher (app/lenguaje/text_to_cypher.py). Es la
+primera barrera entre lo que el LLM genera y Neo4j; la segunda es que la
+consulta corre en una transacción de solo lectura (conocimiento/grafo.leer).
 """
 import pytest
 
-from app.main import clean_cypher_output, validate_cypher
+from app.lenguaje.text_to_cypher import clean_cypher_output, validate_cypher
 
 
 class TestCleanCypherOutput:

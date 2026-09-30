@@ -275,7 +275,7 @@ def ingestar_caso_en_neo4j(caso: dict, caso_id: str, resumen: str, embedding: li
     Crea los nodos CasoClinico, HallazgoPatologico y EventoPostOperatorio
     y los vincula al nodo Paciente/Tumor correspondiente.
     """
-    from app.graph_db import get_graph, driver
+    from app.conocimiento.grafo import sesion_escritura
 
     demo = caso.get("datos_demograficos", {})
     edad = demo.get("edad")
@@ -284,7 +284,7 @@ def ingestar_caso_en_neo4j(caso: dict, caso_id: str, resumen: str, embedding: li
 
     logger.info(f"[ETL] Ingesta de caso {caso_id} en Neo4j...")
 
-    with driver.session() as session:
+    with sesion_escritura() as session:
         # 1. Crear nodo Paciente anónimo (si no existe)
         session.run("""
             MERGE (p:Paciente {hash: $hash})

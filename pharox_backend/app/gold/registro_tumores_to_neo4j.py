@@ -6,7 +6,7 @@ Central - Mendoza, provisto en data/datos actualizados tumores.xlsx (hoja "MAMA"
 Crea un subgrafo independiente (:RegistroTumor), sin relaciones hacia el
 subgrafo clinico sintetico (Paciente/Tumor) ni hacia CIViC/ClinVar/ClinicalTrials/
 cBioPortal -- mismo patron que el resto de las fuentes (ver nota de independencia
-de subgrafos en app/graph_db.py). Se cruza en tiempo de consulta por coincidencia
+de subgrafos en app/conocimiento/esquema.py). Se cruza en tiempo de consulta por coincidencia
 de topografia/biomarcadores/estadio, no por relaciones precomputadas.
 
 Fuente sin ID de paciente (removido intencionalmente antes de compartir el
@@ -40,14 +40,11 @@ import sys
 import datetime
 
 import openpyxl
-from neo4j import GraphDatabase
+from app.conocimiento.grafo import sesion_escritura
 from dotenv import load_dotenv
 
 load_dotenv()
 
-NEO4J_URI = os.getenv("NEO4J_URI", "bolt://localhost:7687")
-NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
-NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "pharoxpass")
 
 DATA_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
@@ -62,15 +59,13 @@ HOJA = "MAMA"
 VALORES_NULOS = {"N/D", "n/d", "None", "", "...", None}
 FECHA_CENTINELA = datetime.date(1900, 1, 2)
 
-driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
-
 
 def crear_constraints(tx):
     tx.run("CREATE CONSTRAINT unique_registro_tumor_id IF NOT EXISTS FOR (r:RegistroTumor) REQUIRE r.id IS UNIQUE")
 
 
 def inicializar_esquema_registro_tumores():
-    with driver.session() as session:
+    with sesion_escritura() as session:
         session.execute_write(crear_constraints)
 
 
@@ -213,7 +208,7 @@ def procesar_archivo(ruta: str, hoja: str = HOJA) -> int:
     encabezado = filas[0]
 
     procesadas = 0
-    with driver.session() as session:
+    with sesion_escritura() as session:
         for i, valores in enumerate(filas[1:], start=1):
             fila = dict(zip(encabezado, valores))
             registro = normalizar_fila(fila, i)

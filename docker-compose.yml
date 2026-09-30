@@ -35,7 +35,8 @@ services:
     depends_on:
       - ollama
 
-  # Neo4j local OPCIONAL.
+  # Neo4j local OPCIONAL (docker compose --profile local-db up). Por defecto el
+  # backend usa la instancia AuraDB compartida definida en .env (NEO4J_URI).
   neo4j:
     profiles: ["local-db"]
     image: neo4j:5.18.0
@@ -48,9 +49,9 @@ services:
       - neo4j_logs:/logs
     environment:
       - NEO4J_AUTH=neo4j/pharoxpass
-      # APOC habilita apoc.meta.* / apoc.schema.* que usa Neo4jGraph (LangChain) para
-      # auto-introspeccionar el esquema real; sin esto, el text-to-Cypher siempre usa
-      # el fallback hardcodeado de app/graph_db.py::obtener_esquema_nativo_fallback.
+      # El backend ya no depende de APOC: el esquema para el text-to-Cypher se describe
+      # con db.labels()/db.relationshipTypes() (app/conocimiento/esquema.py). Se deja
+      # habilitado para exploración manual desde el browser de Neo4j.
       - NEO4J_PLUGINS=["apoc"]
       - NEO4J_dbms_security_procedures_unrestricted=apoc.*
     restart: unless-stopped

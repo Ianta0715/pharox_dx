@@ -33,21 +33,17 @@ import sys
 import json
 import glob
 
-from neo4j import GraphDatabase
+from app.conocimiento.grafo import sesion_escritura
 from dotenv import load_dotenv
 
 load_dotenv()
 
-NEO4J_URI = os.getenv("NEO4J_URI", "bolt://localhost:7687")
-NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
-NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "pharoxpass")
 
 BRONZE_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
     "data", "bronze"
 )
 
-driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
 
 LOTE_INGESTA = 500  # filas de alteracion por transaccion (UNWIND), no una por row
 
@@ -59,7 +55,7 @@ def crear_constraints(tx):
 
 
 def inicializar_esquema_cbioportal():
-    with driver.session() as session:
+    with sesion_escritura() as session:
         session.execute_write(crear_constraints)
 
 
@@ -125,7 +121,7 @@ def procesar_archivo_cbioportal(ruta: str) -> int:
         estudios_crudos = json.load(f)
 
     total_filas = 0
-    with driver.session() as session:
+    with sesion_escritura() as session:
         for estudio_crudo in estudios_crudos:
             study_id = estudio_crudo["study_id"]
             estudio = normalizar_estudio(estudio_crudo.get("study_info") or {})

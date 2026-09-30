@@ -10,7 +10,7 @@ CONOCIMIENTO DE REFERENCIA: filas que dicen "dado este perfil clinico
 tratamiento estandar". No hay relacion 1-a-1 con los pacientes de
 RegistroTumor -- se cruzan en tiempo de consulta por coincidencia de perfil
 (topografia/biomarcadores/estadio), igual que CIViC se cruza con el resto del
-grafo clinico. Ver la nota de independencia de subgrafos en app/graph_db.py.
+grafo clinico. Ver la nota de independencia de subgrafos en app/conocimiento/esquema.py.
 
 IMPORTANTE -- filtro a cancer de mama: el excel origen trae protocolos de
 MUCHOS tipos de cancer (prostata C61, colon/recto C18-C20, pulmon C34,
@@ -57,14 +57,11 @@ import os
 import sys
 
 import openpyxl
-from neo4j import GraphDatabase
+from app.conocimiento.grafo import sesion_escritura
 from dotenv import load_dotenv
 
 load_dotenv()
 
-NEO4J_URI = os.getenv("NEO4J_URI", "bolt://localhost:7687")
-NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
-NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "pharoxpass")
 
 DATA_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
@@ -73,15 +70,13 @@ DATA_DIR = os.path.join(
 ARCHIVO_DEFAULT = os.path.join(DATA_DIR, "tratamientos.xlsx")
 HOJA = "Datos Tipo de CancerTratamiento"
 
-driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
-
 
 def crear_constraints(tx):
     tx.run("CREATE CONSTRAINT unique_protocolo_tratamiento_id IF NOT EXISTS FOR (p:ProtocoloTratamiento) REQUIRE p.id IS UNIQUE")
 
 
 def inicializar_esquema_protocolos():
-    with driver.session() as session:
+    with sesion_escritura() as session:
         session.execute_write(crear_constraints)
 
 
@@ -184,7 +179,7 @@ def procesar_archivo(ruta: str, hoja: str = HOJA) -> int:
 
     procesadas = 0
     descartadas_otro_cancer = 0
-    with driver.session() as session:
+    with sesion_escritura() as session:
         for i, valores in enumerate(filas[1:], start=1):
             fila = dict(zip(encabezado, valores))
             if not any(fila.values()):

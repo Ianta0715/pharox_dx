@@ -6,7 +6,7 @@ app/bronze/vigilancia_protocolos_explorer.py -- Pharox_Documento_v5 §11
 
 Crea el subgrafo independiente :ActualizacionProtocolo (mismo patron que
 :ProtocoloTratamiento y :RegistroTumor -- ver la nota de independencia de
-subgrafos en app/graph_db.py): sin relaciones precomputadas hacia el resto del
+subgrafos en app/conocimiento/esquema.py): sin relaciones precomputadas hacia el resto del
 grafo, se cruza en tiempo de consulta por coincidencia de subtipo molecular
 (subtipos_detectados), igual que el resto de las fuentes.
 
@@ -39,21 +39,17 @@ import json
 import glob
 import html
 
-from neo4j import GraphDatabase
+from app.conocimiento.grafo import sesion_escritura
 from dotenv import load_dotenv
 
 load_dotenv()
 
-NEO4J_URI = os.getenv("NEO4J_URI", "bolt://localhost:7687")
-NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
-NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "pharoxpass")
 
 BRONZE_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
     "data", "bronze"
 )
 
-driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
 
 _TAG_HTML = re.compile(r"<[^>]+>")
 
@@ -104,7 +100,7 @@ def crear_constraints(tx):
 
 
 def inicializar_esquema_vigilancia():
-    with driver.session() as session:
+    with sesion_escritura() as session:
         session.execute_write(crear_constraints)
 
 
@@ -149,7 +145,7 @@ def procesar_archivo(ruta: str) -> int:
         articulos_crudos = json.load(f)
 
     procesadas = 0
-    with driver.session() as session:
+    with sesion_escritura() as session:
         for crudo in articulos_crudos:
             actualizacion = normalizar_actualizacion(crudo)
             if not actualizacion["id"] or not actualizacion["titulo"]:

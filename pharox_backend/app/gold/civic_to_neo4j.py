@@ -26,21 +26,16 @@ import sys
 import json
 import glob
 
-from neo4j import GraphDatabase
+from app.conocimiento.grafo import sesion_escritura
 from dotenv import load_dotenv
 
 load_dotenv()
 
-NEO4J_URI = os.getenv("NEO4J_URI", "bolt://localhost:7687")
-NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
-NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "pharoxpass")
 
 BRONZE_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
     "data", "bronze"
 )
-
-driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
 
 
 # ---------------------------------------------------------------------------
@@ -62,7 +57,7 @@ def crear_constraints(tx):
 
 def inicializar_esquema_civic():
     """Inicializa las restricciones de unicidad en Neo4j (idempotente)."""
-    with driver.session() as session:
+    with sesion_escritura() as session:
         session.execute_write(crear_constraints)
 
 
@@ -244,7 +239,7 @@ def procesar_archivo_civic(ruta_json: str) -> dict:
 
     contadores = {"evidencias": 0, "enfermedades": 0, "terapias": 0, "fuentes": 0}
 
-    with driver.session() as session:
+    with sesion_escritura() as session:
         session.execute_write(ingestar_variante, variante)
 
         for ev_raw in evidencias_raw:
