@@ -45,6 +45,9 @@ class _DriverFalso:
 
 @pytest.fixture
 def driver(monkeypatch):
+    # Hermético: sin esto, get_settings() recarga el .env real del desarrollador
+    # (que en AuraDB define NEO4J_DATABASE) y pisa lo que fija cada test.
+    monkeypatch.setattr("app.config.load_dotenv", lambda *args, **kwargs: False)
     get_settings.cache_clear()
     falso = _DriverFalso()
     monkeypatch.setattr(grafo, "_driver", falso)
